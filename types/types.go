@@ -1,5 +1,7 @@
 package types
 
 type URL struct {
-	Str string
+	Ori    string
+	Bucket string
+	Short  string
 }
