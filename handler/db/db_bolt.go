@@ -21,8 +21,8 @@ func NewDB(path string) (*BoltDB, error) {
 	d := &BoltDB{
 		db: db,
 	}
-	d.createBucket("MD5") // md5:short URL
-	d.createBucket("URL") // short URL:md5
+	d.createBucket("LONG")  // shortURL -> longURL
+	d.createBucket("SHORT") // longURL's MD5 -> shortURL
 	return d, nil
 }
 
@@ -31,7 +31,7 @@ func (d *BoltDB) Close() error {
 	return nil
 }
 
-func (d *BoltDB) Set(index, shortURL string) error {
+func (d *BoltDB) SetShort(index, shortURL string) error {
 	// Start a writable transaction.
 	tx, err := d.db.Begin(true)
 	if err != nil {
@@ -40,7 +40,7 @@ func (d *BoltDB) Set(index, shortURL string) error {
 	defer tx.Rollback()
 
 	// Use the transaction...
-	b := tx.Bucket([]byte("URL"))
+	b := tx.Bucket([]byte("SHORT"))
 	err = b.Put([]byte(index), []byte(shortURL))
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (d *BoltDB) Set(index, shortURL string) error {
 	return nil
 }
 
-func (d *BoltDB) Get(index string) (string, error) {
+func (d *BoltDB) GetShort(index string) (string, error) {
 	// Start a writable transaction.
 	tx, err := d.db.Begin(false)
 	if err != nil {
@@ -62,7 +62,7 @@ func (d *BoltDB) Get(index string) (string, error) {
 	defer tx.Rollback()
 
 	// Use the transaction...
-	b := tx.Bucket([]byte("URL"))
+	b := tx.Bucket([]byte("SHORT"))
 	byteURL := b.Get([]byte(index))
 
 	shortURL := string(byteURL)
@@ -100,7 +100,46 @@ func (d *BoltDB) Len() (int, error) {
 	defer tx.Rollback()
 
 	// Use the transaction...
-	b := tx.Bucket([]byte("URL"))
+	b := tx.Bucket([]byte("SHORT"))
 
 	return b.Stats().KeyN, nil
+}
+
+func (d *BoltDB) SetLong(shortURL, longURL string) error {
+	// Start a writable transaction.
+	tx, err := d.db.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Use the transaction...
+	b := tx.Bucket([]byte("LONG"))
+	err = b.Put([]byte(shortURL), []byte(longURL))
+	if err != nil {
+		return err
+	}
+
+	// Commit the transaction and check for error.
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *BoltDB) GetLong(shortURL string) (string, error) {
+	// Start a writable transaction.
+	tx, err := d.db.Begin(false)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+
+	// Use the transaction...
+	b := tx.Bucket([]byte("LONG"))
+	byteURL := b.Get([]byte(shortURL))
+
+	longURL := string(byteURL)
+
+	return longURL, nil
 }
