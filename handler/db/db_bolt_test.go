@@ -36,6 +36,12 @@ func TestBoltDBLen(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
+	err = db.Set("1", "URL")
+	assert.NoError(t, err)
+
+	err = db.Set("3", "URL")
+	assert.NoError(t, err)
+
 	l, err := db.Len()
 	assert.NoError(t, err)
 	fmt.Println(l)

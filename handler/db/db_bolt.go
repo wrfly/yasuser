@@ -21,7 +21,8 @@ func NewDB(path string) (*BoltDB, error) {
 	d := &BoltDB{
 		db: db,
 	}
-	d.createBucket("URL")
+	d.createBucket("MD5") // md5:short URL
+	d.createBucket("URL") // short URL:md5
 	return d, nil
 }
 
@@ -90,7 +91,7 @@ func (d *BoltDB) createBucket(bucketName string) error {
 	return nil
 }
 
-func (d *BoltDB) Len() (uint64, error) {
+func (d *BoltDB) Len() (int, error) {
 	// Start a writable transaction.
 	tx, err := d.db.Begin(true)
 	if err != nil {
@@ -101,5 +102,5 @@ func (d *BoltDB) Len() (uint64, error) {
 	// Use the transaction...
 	b := tx.Bucket([]byte("URL"))
 
-	return b.NextSequence()
+	return b.Stats().KeyN, nil
 }

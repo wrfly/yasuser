@@ -13,6 +13,6 @@ func TestMD5(t *testing.T) {
 }
 
 func TestCalHash(t *testing.T) {
-	c := CalHash(600000000)
+	c := CalHash(65)
 	t.Log(c)
 }
