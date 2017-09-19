@@ -8,18 +8,17 @@ import (
 	"github.com/wrfly/short-url/handler/db"
 )
 
-func TestShort(t *testing.T) {
-	db, err := db.NewDB("/tmp/myxx.db")
+func TestShorter(t *testing.T) {
+	db, err := db.NewDB("/tmp/my1x.db")
 	assert.NoError(t, err)
 	s := Shorter{
 		DB: db,
 	}
 
-	p := fmt.Println
-
 	for i := 0; i < 64; i++ {
 		u := fmt.Sprintf("%v", i)
-		p(s.Short(u))
+		short := s.Short(u)
+		long := s.Long(short)
+		assert.Equal(t, u, long)
 	}
-
 }
