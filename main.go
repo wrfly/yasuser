@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/sirupsen/logrus"
 
@@ -26,7 +25,7 @@ func srv(conf config.Config, shorter *handler.Shorter) error {
 	})
 	srv.POST("/", func(c *gin.Context) {
 		short := shorter.Short(c.PostForm("url"))
-		shortURL := path.Join(conf.Prefix, short)
+		shortURL := fmt.Sprintf("%s/%s", conf.Prefix, short)
 		c.String(200, shortURL)
 	})
 	port := fmt.Sprintf(":%d", conf.Port)
@@ -35,31 +34,40 @@ func srv(conf config.Config, shorter *handler.Shorter) error {
 
 func main() {
 	conf := config.Config{}
-	blotDB, err := db.NewDB("/tmp/test.db")
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	shorter := handler.Shorter{
-		DB: blotDB,
-	}
 	app := &cli.App{
 		Name:  "shortu",
 		Usage: "short your url",
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:        "listen",
+				Usage:       "listen port number",
 				Aliases:     []string{"l"},
 				Value:       8082,
 				Destination: &conf.Port,
 			},
 			&cli.StringFlag{
 				Name:        "prefix",
+				Usage:       "domain prefix",
 				Aliases:     []string{"p"},
 				Value:       "https://url.kfd.me",
 				Destination: &conf.Prefix,
 			},
+			&cli.StringFlag{
+				Name:        "db-path",
+				Aliases:     []string{"db"},
+				Usage:       "database path",
+				Value:       "short-url.db",
+				Destination: &conf.DBPath,
+			},
 		},
 		Action: func(c *cli.Context) error {
+			blotDB, err := db.NewDB(conf.DBPath)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			shorter := handler.Shorter{
+				DB: blotDB,
+			}
 			return srv(conf, &shorter)
 		},
 	}
