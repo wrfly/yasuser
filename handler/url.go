@@ -26,17 +26,16 @@ func (s *Shorter) Short(URL string) string {
 
 	// not found
 	short = s.sURL(URL)
-	err = s.DB.SetLong(short, URL)
-	if err != nil {
-		logrus.Error(err)
-		return ""
-	}
-
-	err = s.DB.SetShort(index, short)
-	if err != nil {
-		logrus.Error(err)
-		return ""
-	}
+	go func() {
+		err = s.DB.SetLong(short, URL)
+		if err != nil {
+			logrus.Error(err)
+		}
+		err = s.DB.SetShort(index, short)
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 	return short
 }
 
