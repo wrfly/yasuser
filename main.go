@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -13,19 +14,28 @@ import (
 	"gopkg.in/urfave/cli.v2"
 )
 
-func srv(conf config.Config, shorter *handler.Shorter) error {
+func srv(conf *config.Config, shorter *handler.Shorter) error {
+	example := "curl https://u.kfd.me -d \"http://longlonglong.com/long/long/long?a=1&b=2\""
 	srv := gin.Default()
 	srv.GET("/:url", func(c *gin.Context) {
 		location := shorter.Long(c.Param("url"))
 		if location == "" {
-			c.String(404, "URL Not Found")
+			c.String(404, example)
 			return
 		}
 		c.Redirect(302, location)
 	})
+	srv.GET("/", func(c *gin.Context) {
+		c.String(200, example)
+	})
 	srv.POST("/", func(c *gin.Context) {
-		short := shorter.Short(c.PostForm("url"))
-		shortURL := fmt.Sprintf("%s/%s", conf.Prefix, short)
+		b, err := ioutil.ReadAll(c.Request.Body)
+		if err != nil {
+			logrus.Error(err)
+			c.String(500, err.Error())
+		}
+		short := shorter.Short(string(b))
+		shortURL := fmt.Sprintf("%s/%s\n", conf.Prefix, short)
 		c.String(200, shortURL)
 	})
 	port := fmt.Sprintf(":%d", conf.Port)
@@ -49,7 +59,7 @@ func main() {
 				Name:        "prefix",
 				Usage:       "domain prefix",
 				Aliases:     []string{"p"},
-				Value:       "https://url.kfd.me",
+				Value:       "https://u.kfd.me",
 				Destination: &conf.Prefix,
 			},
 			&cli.StringFlag{
@@ -68,7 +78,7 @@ func main() {
 			shorter := handler.Shorter{
 				DB: blotDB,
 			}
-			return srv(conf, &shorter)
+			return srv(&conf, &shorter)
 		},
 	}
 
