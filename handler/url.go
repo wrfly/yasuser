@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/wrfly/short-url/handler/db"
 	"github.com/wrfly/short-url/utils"
@@ -47,6 +49,7 @@ func (s *Shorter) sURL(URL string) string {
 	}
 
 	shortURL := utils.CalHash(n)
+	shortURL = strings.TrimLeft(shortURL, "0")
 
 	return shortURL
 }
