@@ -53,6 +53,10 @@ https://u.kfd.me/1
 - [x] it works
 - [x] blob database
 - [ ] redis database
-- [ ] customize URL
-- [ ] URL timeout
+- [ ] customization
+- [ ] TTL of URL
 - [ ] rate limit
+- [ ] manage(auth)
+- [ ] statistic
+  - [ ] URL status(with auth)
+  - [ ] runtime metrics(with auth)
