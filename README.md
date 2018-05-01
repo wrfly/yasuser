@@ -9,16 +9,19 @@ Develop: [![Develop Build Status](https://travis-ci.org/wrfly/shorturl.svg?branc
 
 ```bash
 NAME:
-   shortu - short your url
+   short-url - short your url
 
 USAGE:
    short-url [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.0
+   Version: 0.1.0  Commit: 2664d03  Date: 2018-05-01
+
+AUTHOR:
+   wrfly <mr.wrfly@gmail.com>
 
 COMMANDS:
-    help, h  Shows a list of commands or help for one command
+     help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --listen value, -l value   listen port number (default: 8082)

@@ -7,9 +7,9 @@ VERSION := $(shell cat VERSION)
 COMMITID := $(shell git rev-parse --short HEAD)
 BUILDAT := $(shell date +%Y-%m-%d)
 
-CTIMEVAR = -X $(PKG)/version.CommitID=$(COMMITID) \
-        -X $(PKG)/version.Version=$(VERSION) \
-        -X $(PKG)/version.BuildAt=$(BUILDAT)
+CTIMEVAR = -X main.CommitID=$(COMMITID) \
+        -X main.Version=$(VERSION) \
+        -X main.BuildAt=$(BUILDAT)
 GO_LDFLAGS = -ldflags "-w $(CTIMEVAR)"
 GO_LDFLAGS_STATIC = -ldflags "-w $(CTIMEVAR) -extldflags -static"
 

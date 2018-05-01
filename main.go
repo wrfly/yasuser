@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -15,52 +16,57 @@ import (
 
 func main() {
 	conf := config.Config{}
-	app := &cli.App{
-		Name:  "shortu",
-		Usage: "short your url",
-		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:        "listen",
-				Usage:       "listen port number",
-				Aliases:     []string{"l"},
-				Value:       8082,
-				Destination: &conf.Port,
-			},
-			&cli.StringFlag{
-				Name:        "domain",
-				Usage:       "short URL prefix(like https://u.kfd.me)",
-				Value:       "https://u.kfd.me",
-				Destination: &conf.Prefix,
-			},
-			&cli.StringFlag{
-				Name:        "db-path",
-				Aliases:     []string{"p"},
-				Usage:       "database path",
-				Value:       "short-url.db",
-				Destination: &conf.DBPath,
-			},
-			&cli.StringFlag{
-				Name:        "db-type",
-				Aliases:     []string{"t"},
-				Usage:       "database type: redis or file",
-				Value:       "file",
-				Destination: &conf.DBType,
-			},
-			&cli.StringFlag{
-				Name:        "redis",
-				Aliases:     []string{"r"},
-				Usage:       "database path",
-				Value:       "localhost:6379/0",
-				Destination: &conf.Redis,
-			},
-			&cli.BoolFlag{
-				Name:        "debug",
-				Aliases:     []string{"d"},
-				Usage:       "log level: debug",
-				Value:       false,
-				Destination: &conf.Debug,
-			},
+	appFlags := []cli.Flag{
+		&cli.IntFlag{
+			Name:        "listen",
+			Usage:       "listen port number",
+			Aliases:     []string{"l"},
+			Value:       8082,
+			Destination: &conf.Port,
 		},
+		&cli.StringFlag{
+			Name:        "domain",
+			Usage:       "short URL prefix(like https://u.kfd.me)",
+			Value:       "https://u.kfd.me",
+			Destination: &conf.Prefix,
+		},
+		&cli.StringFlag{
+			Name:        "db-path",
+			Aliases:     []string{"p"},
+			Usage:       "database path",
+			Value:       "short-url.db",
+			Destination: &conf.DBPath,
+		},
+		&cli.StringFlag{
+			Name:        "db-type",
+			Aliases:     []string{"t"},
+			Usage:       "database type: redis or file",
+			Value:       "file",
+			Destination: &conf.DBType,
+		},
+		&cli.StringFlag{
+			Name:        "redis",
+			Aliases:     []string{"r"},
+			Usage:       "database path",
+			Value:       "localhost:6379/0",
+			Destination: &conf.Redis,
+		},
+		&cli.BoolFlag{
+			Name:        "debug",
+			Aliases:     []string{"d"},
+			Usage:       "log level: debug",
+			Value:       false,
+			Destination: &conf.Debug,
+		},
+	}
+
+	app := &cli.App{
+		Name:    "short-url",
+		Usage:   "short your url",
+		Authors: author,
+		Version: fmt.Sprintf("Version: %s\tCommit: %s\tDate: %s",
+			Version, CommitID, BuildAt),
+		Flags: appFlags,
 		Action: func(c *cli.Context) error {
 			var (
 				shorterDB db.Database
