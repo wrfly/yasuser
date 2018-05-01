@@ -1,0 +1,10 @@
+version: "3"
+services:
+  short-url:
+    image: wrfly/short-url:latest
+    command: short-url
+    ports:
+      - 8080:8080
+    environments:
+      - WDC_DNS="8.8.8.8:53,8.8.4.4:53"
+      - WDC_RATE="2333"
