@@ -1,7 +1,6 @@
 .PHONY: build test
 
 NAME = short-url
-PKG = github.com/wrfly/$(NAME)
 
 VERSION := $(shell cat VERSION)
 COMMITID := $(shell git rev-parse --short HEAD)
