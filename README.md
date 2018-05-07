@@ -2,8 +2,8 @@
 
 **Short** or **Restore** your URL, like <https://git.io/> or <https://goo.gl/> but for all domains and under your control.
 
-Master: [![Master Build Status](https://travis-ci.org/wrfly/shorturl.svg?branch=master)](https://travis-ci.org/wrfly/shorturl)
-Develop: [![Develop Build Status](https://travis-ci.org/wrfly/shorturl.svg?branch=develop)](https://travis-ci.org/wrfly/shorturl)
+Master: [![Master Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=master)](https://travis-ci.org/wrfly/short-url)
+Develop: [![Develop Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=develop)](https://travis-ci.org/wrfly/short-url)
 
 ## Backend
 
