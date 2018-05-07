@@ -25,4 +25,4 @@ img:
 	docker build -t wrfly/short-url .
 
 push-img:
-	dockre push wrfly/short-url
+	docker push wrfly/short-url
