@@ -5,7 +5,21 @@
 Master: [![Master Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=master)](https://travis-ci.org/wrfly/short-url)
 Develop: [![Develop Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=develop)](https://travis-ci.org/wrfly/short-url)
 
-## Backend
+## Run
+
+### As Container
+
+```sh
+docker run --name short-url -dti \
+  -p 8084:8080 -v `pwd`:/data \
+  -e DB_PATH=/data/short-url.db \
+  -e PREFIX=https://u.kfd.me \
+  wrfly/short-url
+```
+
+Or use the [docker-compose.yml](./docker-compose.yml).
+
+### Help
 
 ```bash
 NAME:
@@ -15,7 +29,7 @@ USAGE:
    short-url [global options] command [command options] [arguments...]
 
 VERSION:
-   Version: 0.1.0  Commit: 2664d03  Date: 2018-05-01
+   Version: 0.1.0  Commit: 5d7172a  Date: 2018-05-07
 
 AUTHOR:
    wrfly <mr.wrfly@gmail.com>
@@ -24,14 +38,14 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --listen value, -l value   listen port number (default: 8082)
-   --domain value             short URL prefix(like https://u.kfd.me) (default: "https://u.kfd.me")
-   --db-path value, -p value  database path (default: "short-url.db")
-   --db-type value, -t value  database type: redis or file (default: "file")
-   --redis value, -r value    database path (default: "localhost:6379/0")
-   --debug, -d                log level: debug (default: false)
-   --help, -h                 show help (default: false)
-   --version, -v              print the version (default: false)
+   --port value     port number (default: 8080) [$PORT]
+   --prefix value   short URL prefix (default: "https://u.kfd.me") [$PREFIX]
+   --db-path value  database path (default: "short-url.db") [$DB_PATH]
+   --db-type value  database type: redis or file (default: "file") [$DB_TYPE]
+   --redis value    database path (default: "localhost:6379/0") [$REDIS]
+   --debug, -d      log level: debug (default: false) [$DEBUG]
+   --help, -h       show help (default: false)
+   --version, -v    print the version (default: false)
 ```
 
 ## Usage

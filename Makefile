@@ -18,3 +18,8 @@ build:
 test:
 	go test --cover .
 
+dev: build
+	./$(NAME)
+
+img:
+	docker build -t wrfly/short-url .
