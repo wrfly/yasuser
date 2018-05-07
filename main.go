@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/wrfly/short-url/config"
@@ -18,36 +20,37 @@ func main() {
 	conf := config.Config{}
 	appFlags := []cli.Flag{
 		&cli.IntFlag{
-			Name:        "listen",
-			Usage:       "listen port number",
-			Aliases:     []string{"l"},
-			Value:       8082,
+			Name:        "port",
+			Usage:       "port number",
+			EnvVars:     []string{"PORT"},
+			Value:       8080,
 			Destination: &conf.Port,
 		},
 		&cli.StringFlag{
-			Name:        "domain",
-			Usage:       "short URL prefix(like https://u.kfd.me)",
+			Name:        "prefix domain",
+			Usage:       "short URL prefix",
+			EnvVars:     []string{"PREFIX"},
 			Value:       "https://u.kfd.me",
 			Destination: &conf.Prefix,
 		},
 		&cli.StringFlag{
 			Name:        "db-path",
-			Aliases:     []string{"p"},
 			Usage:       "database path",
+			EnvVars:     []string{"DB_PATH"},
 			Value:       "short-url.db",
 			Destination: &conf.DBPath,
 		},
 		&cli.StringFlag{
 			Name:        "db-type",
-			Aliases:     []string{"t"},
 			Usage:       "database type: redis or file",
+			EnvVars:     []string{"DB_TYPE"},
 			Value:       "file",
 			Destination: &conf.DBType,
 		},
 		&cli.StringFlag{
 			Name:        "redis",
-			Aliases:     []string{"r"},
 			Usage:       "database path",
+			EnvVars:     []string{"REDIS"},
 			Value:       "localhost:6379/0",
 			Destination: &conf.Redis,
 		},
@@ -55,6 +58,7 @@ func main() {
 			Name:        "debug",
 			Aliases:     []string{"d"},
 			Usage:       "log level: debug",
+			EnvVars:     []string{"DEBUG"},
 			Value:       false,
 			Destination: &conf.Debug,
 		},
@@ -93,6 +97,13 @@ func main() {
 			shorter := handler.Shorter{
 				DB: shorterDB,
 			}
+
+			if conf.Debug {
+				logrus.SetLevel(logrus.DebugLevel)
+			} else {
+				gin.SetMode(gin.ReleaseMode)
+			}
+
 			return routes.Serve(&conf, &shorter)
 		},
 	}

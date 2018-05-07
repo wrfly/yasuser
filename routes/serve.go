@@ -34,6 +34,10 @@ func Serve(conf *config.Config, shorter *handler.Shorter) error {
 		shortURL := fmt.Sprintf("%s/%s\n", conf.Prefix, short)
 		c.String(200, shortURL)
 	})
+
 	port := fmt.Sprintf(":%d", conf.Port)
+	logrus.Infof("Service running at [ %s ], with prefix [ %s ]",
+		port, conf.Prefix)
+
 	return srv.Run(port)
 }

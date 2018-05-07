@@ -5,7 +5,7 @@ RUN cd ${PKG} && \
     glide i && \
     make test && \
     make build && \
-    mv ${PKG}/short-url /app
+    mv ${PKG}/short-url /
 
 FROM alpine
 COPY --from=0 /short-url /usr/local/bin/
