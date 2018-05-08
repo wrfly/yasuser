@@ -19,7 +19,7 @@ test:
 	go test --cover .
 
 dev: build
-	./$(NAME)
+	./$(NAME) -d
 
 img:
 	docker build -t wrfly/short-url .
