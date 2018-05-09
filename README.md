@@ -7,14 +7,12 @@ Develop: [![Develop Build Status](https://travis-ci.org/wrfly/short-url.svg?bran
 
 ## Run
 
-### As Container
-
 ```sh
 docker run --name short-url -dti \
-  -p 8084:8080 -v `pwd`:/data \
-  -e DB_PATH=/data/short-url.db \
-  -e PREFIX=https://u.kfd.me \
-  wrfly/short-url
+    -p 8084:8080 -v `pwd`:/data \
+    -e DB_PATH=/data/short-url.db \
+    -e PREFIX=https://u.kfd.me \
+    wrfly/short-url
 ```
 
 Or use the [docker-compose.yml](./docker-compose.yml).
@@ -35,7 +33,7 @@ AUTHOR:
    wrfly <mr.wrfly@gmail.com>
 
 COMMANDS:
-     help, h  Shows a list of commands or help for one command
+    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --port value     port number (default: 8080) [$PORT]
@@ -66,6 +64,7 @@ https://u.kfd.me/1
 
 - [x] it works
 - [x] blob database
+- [x] length and validate
 - [ ] redis database
 - [ ] customization
 - [ ] TTL of URL

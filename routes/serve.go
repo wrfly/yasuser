@@ -2,7 +2,9 @@ package routes
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
+	"net/url"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -10,29 +12,58 @@ import (
 	"github.com/wrfly/short-url/handler"
 )
 
+const MAX_URL_LENGTH = 1e3
+
+var urlBufferPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, MAX_URL_LENGTH+1)
+	},
+}
+
+// Serve routes
 func Serve(conf *config.Config, shorter *handler.Shorter) error {
-	example := "curl https://u.kfd.me -d \"http://longlonglong.com/long/long/long?a=1&b=2\""
+	example := fmt.Sprintf("curl %s -d \"%s\"",
+		conf.Prefix, "http://longlonglong.com/long/long/long?a=1&b=2")
+
 	srv := gin.Default()
-	srv.GET("/:url", func(c *gin.Context) {
-		location := shorter.Long(c.Param("url"))
-		if location == "" {
-			c.String(404, example)
+
+	srv.GET("/:s", func(c *gin.Context) {
+		realURL := shorter.Long(c.Param("s"))
+		if realURL == "" {
+			c.String(404, fmt.Sprintln("not found"))
 			return
 		}
-		c.Redirect(302, location)
+		c.Redirect(302, realURL)
 	})
+
 	srv.GET("/", func(c *gin.Context) {
 		c.String(200, example)
 	})
+
 	srv.POST("/", func(c *gin.Context) {
-		b, err := ioutil.ReadAll(c.Request.Body)
-		if err != nil {
-			logrus.Error(err)
-			c.String(500, err.Error())
+		buf := urlBufferPool.Get().([]byte)
+		defer urlBufferPool.Put(buf)
+		n, err := c.Request.Body.Read(buf)
+		if err != io.EOF && err != nil {
+			c.String(500, fmt.Sprintf("error: %s\n", err))
+			return
 		}
-		short := shorter.Short(string(b))
-		shortURL := fmt.Sprintf("%s/%s\n", conf.Prefix, short)
-		c.String(200, shortURL)
+		if n > MAX_URL_LENGTH {
+			c.String(400, fmt.Sprintln("Bad request, URL too long"))
+			return
+		}
+
+		longURL := fmt.Sprintf("%s", buf[:n])
+		if invalidURL(longURL) {
+			c.String(400, fmt.Sprintln("invalid URL"))
+			return
+		}
+
+		short := shorter.Short(longURL)
+		shortURL := fmt.Sprintf("%s/%s", conf.Prefix, short)
+		logrus.Debugf("shorten URL: [ %s ] -> [ %s ]",
+			longURL, shortURL)
+		c.String(200, fmt.Sprintln(shortURL))
 	})
 
 	port := fmt.Sprintf(":%d", conf.Port)
@@ -40,4 +71,25 @@ func Serve(conf *config.Config, shorter *handler.Shorter) error {
 		port, conf.Prefix)
 
 	return srv.Run(port)
+}
+
+func invalidURL(URL string) bool {
+	logrus.Debugf("get url: %s", URL)
+	u, err := url.Parse(URL)
+	if err != nil {
+		return true
+	}
+
+	switch u.Scheme {
+	case "":
+		return true
+	case "http":
+	case "https":
+	case "ftp":
+	case "tcp":
+	default:
+		return true
+	}
+
+	return false
 }

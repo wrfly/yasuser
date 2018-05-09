@@ -19,7 +19,7 @@ func (s *Shorter) Short(URL string) string {
 	// mem cache first,then db
 	short, err := s.DB.GetShort(index)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("get short from db error: %s", err)
 		return ""
 	}
 	if short != "" {
@@ -31,11 +31,11 @@ func (s *Shorter) Short(URL string) string {
 	go func() {
 		err = s.DB.SetLong(short, URL)
 		if err != nil {
-			logrus.Error(err)
+			logrus.Errorf("set long error: %s", err)
 		}
 		err = s.DB.SetShort(index, short)
 		if err != nil {
-			logrus.Error(err)
+			logrus.Errorf("set short error: %s", err)
 		}
 	}()
 	return short
@@ -44,7 +44,7 @@ func (s *Shorter) Short(URL string) string {
 func (s *Shorter) sURL(URL string) string {
 	n, err := s.DB.Len()
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("get db lenth error: %s", err)
 		return "_"
 	}
 
@@ -58,7 +58,7 @@ func (s *Shorter) Long(shortURL string) string {
 	// mem cache first,then db
 	longURL, err := s.DB.GetLong(shortURL)
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("restore URL error: %s", err)
 		return ""
 	}
 
