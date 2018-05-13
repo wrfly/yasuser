@@ -10,7 +10,7 @@ type BoltDB struct {
 	db *bolt.DB
 }
 
-func NewBoltDB(path string) (*BoltDB, error) {
+func newBoltDB(path string) (*BoltDB, error) {
 	db, err := bolt.Open(path, 0600, nil)
 	if err != nil {
 		return nil, err

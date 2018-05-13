@@ -1,18 +1,21 @@
-# Short-URL
+# Yasuser
 
-**Short** or **Restore** your URL, like <https://git.io/> or <https://goo.gl/> but for all domains and under your control.
+> Yet another self-hosted URL shortener.
 
-Master: [![Master Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=master)](https://travis-ci.org/wrfly/short-url)
-Develop: [![Develop Build Status](https://travis-ci.org/wrfly/short-url.svg?branch=develop)](https://travis-ci.org/wrfly/short-url)
+*Short* or *Restore* your URL, like <https://git.io/> or <https://goo.gl/>
+but under **your** control.
+
+Master: [![Master Build Status](https://travis-ci.org/wrfly/yasuser.svg?branch=master)](https://travis-ci.org/wrfly/yasuser)
+Develop: [![Develop Build Status](https://travis-ci.org/wrfly/yasuser.svg?branch=develop)](https://travis-ci.org/wrfly/yasuser)
 
 ## Run
 
 ```sh
-docker run --name short-url -dti \
+docker run --name yasuser -dti \
     -p 8084:8080 -v `pwd`:/data \
-    -e DB_PATH=/data/short-url.db \
+    -e DB_PATH=/data/yasuser.db \
     -e PREFIX=https://u.kfd.me \
-    wrfly/short-url
+    wrfly/yasuser
 ```
 
 Or use the [docker-compose.yml](./docker-compose.yml).
@@ -21,10 +24,10 @@ Or use the [docker-compose.yml](./docker-compose.yml).
 
 ```bash
 NAME:
-   short-url - short your url
+   yasuser - Yet another self-hosted URL shortener.
 
 USAGE:
-   short-url [global options] command [command options] [arguments...]
+   yasuser [global options] command [command options] [arguments...]
 
 VERSION:
    Version: 0.1.0  Commit: 5d7172a  Date: 2018-05-07
@@ -38,7 +41,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --port value     port number (default: 8080) [$PORT]
    --prefix value   short URL prefix (default: "https://u.kfd.me") [$PREFIX]
-   --db-path value  database path (default: "short-url.db") [$DB_PATH]
+   --db-path value  database path (default: "yasuser.db") [$DB_PATH]
    --db-type value  database type: redis or file (default: "file") [$DB_TYPE]
    --redis value    database path (default: "localhost:6379/0") [$REDIS]
    --debug, -d      log level: debug (default: false) [$DEBUG]
@@ -69,7 +72,11 @@ https://u.kfd.me/1
 - [ ] customization
 - [ ] TTL of URL
 - [ ] rate limit
-- [ ] manage(auth)
+- [ ] management(auth)
+  - [ ] remove(domain or keywords)
+  - [ ] blacklist(domain or keywords)
+  - [ ] whitelist(domain or keywords)
 - [ ] statistic
-  - [ ] URL status(with auth)
-  - [ ] runtime metrics(with auth)
+  - [ ] URL status
+  - [ ] runtime metrics
+- [ ] UI index
