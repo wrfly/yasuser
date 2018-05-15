@@ -2,12 +2,16 @@ package db
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"github.com/boltdb/bolt"
+	"github.com/sirupsen/logrus"
+	"github.com/wrfly/short-url/types"
 )
 
 type BoltDB struct {
-	db *bolt.DB
+	db     *bolt.DB
+	length *int64
 }
 
 func newBoltDB(path string) (*BoltDB, error) {
@@ -18,105 +22,87 @@ func newBoltDB(path string) (*BoltDB, error) {
 	if db == nil {
 		return nil, fmt.Errorf("db is nil")
 	}
-	d := &BoltDB{
-		db: db,
+
+	initLength := int64(-1)
+	boltDB := &BoltDB{
+		db:     db,
+		length: &initLength,
 	}
-	d.createBucket("LONG")  // shortURL -> longURL
-	d.createBucket("SHORT") // longURL's MD5 -> shortURL
-	return d, nil
+	boltDB.createBucket("LONG")  // shortURL -> longURL
+	boltDB.createBucket("SHORT") // longURL's MD5 -> shortURL
+
+	return boltDB, nil
 }
 
-func (d *BoltDB) Close() error {
-	d.db.Close()
+func (boltDB *BoltDB) Close() error {
+	boltDB.db.Close()
 	return nil
 }
 
-func (d *BoltDB) SetShort(index, shortURL string) error {
-	return d.set("SHORT", index, shortURL)
+func (boltDB *BoltDB) SetShort(md5sum, shortURL string) error {
+	err := boltDB.set("SHORT", md5sum, shortURL)
+	if err == nil {
+		atomic.AddInt64(boltDB.length, 1)
+	}
+	return err
 }
 
-func (d *BoltDB) GetShort(index string) (string, error) {
-	return d.get("SHORT", index)
+func (boltDB *BoltDB) GetShort(md5sum string) (string, error) {
+	return boltDB.get("SHORT", md5sum)
 }
 
-func (d *BoltDB) createBucket(bucketName string) error {
-	// Start a writable transaction.
-	tx, err := d.db.Begin(true)
-	if err != nil {
+func (boltDB *BoltDB) createBucket(bucketName string) error {
+	return boltDB.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(bucketName))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+	})
+}
+
+func (boltDB *BoltDB) Len() (int64, error) {
+	if atomic.LoadInt64(boltDB.length) != -1 {
+		return *boltDB.length + 1, nil
+	}
+
+	err := boltDB.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("SHORT"))
+		*boltDB.length = int64(b.Stats().KeyN)
+		return nil
+	})
+
+	return atomic.LoadInt64(boltDB.length) + 1, err
+}
+
+func (boltDB *BoltDB) SetLong(shortURL, longURL string) error {
+	return boltDB.set("LONG", shortURL, longURL)
+}
+
+func (boltDB *BoltDB) GetLong(shortURL string) (string, error) {
+	return boltDB.get("LONG", shortURL)
+}
+
+func (boltDB *BoltDB) set(bkName, key, value string) error {
+	logrus.Debugf("bolt set [%s]: '%s'='%s'", bkName, key, value)
+	return boltDB.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bkName))
+		err := b.Put([]byte(key), []byte(value))
 		return err
-	}
-	defer tx.Rollback()
-
-	// Use the transaction...
-	_, err = tx.CreateBucket([]byte(bucketName))
-	if err != nil {
-		return err
-	}
-
-	// Commit the transaction and check for error.
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil
+	})
 }
 
-func (d *BoltDB) Len() (int, error) {
-	// Start a writable transaction.
-	tx, err := d.db.Begin(true)
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
+func (boltDB *BoltDB) get(bkName, key string) (value string, err error) {
+	err = boltDB.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bkName))
+		v := b.Get([]byte(key))
+		value = string(v)
+		if value == "" {
+			return types.ErrNotFound
+		}
+		return nil
+	})
+	logrus.Debugf("bolt get [%s]: '%s'='%s'", bkName, key, value)
 
-	// Use the transaction...
-	b := tx.Bucket([]byte("SHORT"))
-
-	return b.Stats().KeyN, nil
-}
-
-func (d *BoltDB) SetLong(shortURL, longURL string) error {
-	return d.set("LONG", shortURL, longURL)
-}
-
-func (d *BoltDB) GetLong(shortURL string) (string, error) {
-	return d.get("LONG", shortURL)
-}
-
-func (d *BoltDB) set(bkName, key, value string) error {
-	// Start a writable transaction.
-	tx, err := d.db.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	// Use the transaction...
-	b := tx.Bucket([]byte(bkName))
-	err = b.Put([]byte(key), []byte(value))
-	if err != nil {
-		return err
-	}
-
-	// Commit the transaction and check for error.
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *BoltDB) get(bkName, key string) (string, error) {
-	// Start a writable transaction.
-	tx, err := d.db.Begin(false)
-	if err != nil {
-		return "", err
-	}
-	defer tx.Rollback()
-
-	// Use the transaction...
-	b := tx.Bucket([]byte(bkName))
-	byteURL := b.Get([]byte(key))
-
-	longURL := string(byteURL)
-
-	return longURL, nil
+	return
 }
