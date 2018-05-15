@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/short-url/config"
-	"github.com/wrfly/short-url/shortener/db"
-	"github.com/wrfly/short-url/types"
-	"github.com/wrfly/short-url/utils"
+	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/shortener/db"
+	"github.com/wrfly/yasuser/types"
+	"github.com/wrfly/yasuser/utils"
 )
 
 type Shortener interface {

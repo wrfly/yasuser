@@ -6,7 +6,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/short-url/types"
+	"github.com/wrfly/yasuser/types"
 )
 
 type BoltDB struct {

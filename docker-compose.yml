@@ -1,6 +1,6 @@
 version: "3"
 services:
-  short-url:
+  yasuser:
     image: wrfly/yasuser:latest
     ports:
       - 8084:8080

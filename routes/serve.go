@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/short-url/config"
-	stner "github.com/wrfly/short-url/shortener"
+	"github.com/wrfly/yasuser/config"
+	stner "github.com/wrfly/yasuser/shortener"
 )
 
 const MAX_URL_LENGTH = 1e3

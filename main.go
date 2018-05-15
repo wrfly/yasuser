@@ -9,9 +9,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/wrfly/short-url/config"
-	"github.com/wrfly/short-url/routes"
-	"github.com/wrfly/short-url/shortener"
+	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/routes"
+	"github.com/wrfly/yasuser/shortener"
 	"gopkg.in/urfave/cli.v2"
 )
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wrfly/short-url/shortener/db"
+	"github.com/wrfly/yasuser/shortener/db"
 )
 
 func TestShorter(t *testing.T) {

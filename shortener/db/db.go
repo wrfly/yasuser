@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/wrfly/short-url/config"
+	"github.com/wrfly/yasuser/config"
 )
 
 const (

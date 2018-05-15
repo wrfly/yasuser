@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/short-url/shortener"
+	"github.com/wrfly/yasuser/shortener"
 )
 
 func handleIndex(prefix string) gin.HandlerFunc {
