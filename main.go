@@ -3,110 +3,101 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/wrfly/short-url/config"
-	"github.com/wrfly/short-url/handler"
-	"github.com/wrfly/short-url/handler/db"
-	"github.com/wrfly/short-url/routes"
+	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/routes"
+	"github.com/wrfly/yasuser/shortener"
 	"gopkg.in/urfave/cli.v2"
 )
 
 func main() {
-	conf := config.Config{}
-	appFlags := []cli.Flag{
-		&cli.IntFlag{
-			Name:        "port",
-			Usage:       "port number",
-			EnvVars:     []string{"PORT"},
-			Value:       8080,
-			Destination: &conf.Port,
-		},
-		&cli.StringFlag{
-			Name:        "prefix domain",
-			Usage:       "short URL prefix",
-			EnvVars:     []string{"PREFIX"},
-			Value:       "https://u.kfd.me",
-			Destination: &conf.Prefix,
-		},
-		&cli.StringFlag{
-			Name:        "db-path",
-			Usage:       "database path",
-			EnvVars:     []string{"DB_PATH"},
-			Value:       "short-url.db",
-			Destination: &conf.DBPath,
-		},
-		&cli.StringFlag{
-			Name:        "db-type",
-			Usage:       "database type: redis or file",
-			EnvVars:     []string{"DB_TYPE"},
-			Value:       "file",
-			Destination: &conf.DBType,
-		},
-		&cli.StringFlag{
-			Name:        "redis",
-			Usage:       "database path",
-			EnvVars:     []string{"REDIS"},
-			Value:       "localhost:6379/0",
-			Destination: &conf.Redis,
-		},
-		&cli.BoolFlag{
-			Name:        "debug",
-			Aliases:     []string{"d"},
-			Usage:       "log level: debug",
-			EnvVars:     []string{"DEBUG"},
-			Value:       false,
-			Destination: &conf.Debug,
+
+	conf := config.Config{
+		Server: config.SrvConfig{},
+		Shortener: config.ShortenerConfig{
+			Store: config.StoreConfig{},
 		},
 	}
 
 	app := &cli.App{
-		Name:    "short-url",
-		Usage:   "short your url",
+		Name:    "yasuser",
+		Usage:   "Yet another self-hosted URL shortener.",
 		Authors: author,
 		Version: fmt.Sprintf("Version: %s\tCommit: %s\tDate: %s",
 			Version, CommitID, BuildAt),
-		Flags: appFlags,
 		Action: func(c *cli.Context) error {
-			var (
-				shorterDB db.Database
-				err       error
-			)
-			switch conf.DBType {
-			case "file":
-				shorterDB, err = db.NewBoltDB(conf.DBPath)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-			case "redis":
-				redisHosts := strings.Split(conf.Redis, ",")
-				logrus.Info(redisHosts)
-				return nil
-				// shorterDB, err = db.NewDB(conf.DBPath)
-				// if err != nil {
-				// 	logrus.Fatal(err)
-				// }
-			default:
-				logrus.Fatalf("unknown db type: %s", conf.DBType)
-			}
-
-			shorter := handler.Shorter{
-				DB: shorterDB,
-			}
-
 			if conf.Debug {
 				logrus.SetLevel(logrus.DebugLevel)
 			} else {
 				gin.SetMode(gin.ReleaseMode)
 			}
 
-			return routes.Serve(&conf, &shorter)
+			return routes.Serve(conf.Server, shortener.New(conf.Shortener))
 		},
 	}
+	app.CustomAppHelpTemplate = `NAME:
+	{{.Name}} - {{.Usage}}
+
+OPTIONS:
+	{{range .VisibleFlags}}{{.}}
+	{{end}}
+AUTHOR:
+	{{range .Authors}}{{ . }}
+	{{end}}
+VERSION:
+	{{.Version}}
+`
+	app.Flags = []cli.Flag{
+		&cli.IntFlag{
+			Name:        "port",
+			Aliases:     []string{"p"},
+			Usage:       "port number",
+			EnvVars:     []string{"PORT"},
+			Value:       8080,
+			Destination: &conf.Server.Port,
+		},
+		&cli.StringFlag{
+			Name:        "prefix domain",
+			Usage:       "short URL prefix",
+			EnvVars:     []string{"PREFIX"},
+			Value:       "https://u.kfd.me",
+			Destination: &conf.Server.Prefix,
+		},
+		&cli.StringFlag{
+			Name:        "db-path",
+			Usage:       "database path",
+			EnvVars:     []string{"DB_PATH"},
+			Value:       "/data/yasuser.db",
+			Destination: &conf.Shortener.Store.DBPath,
+		},
+		&cli.StringFlag{
+			Name:        "db-type",
+			Usage:       "database type: redis or bolt",
+			EnvVars:     []string{"DB_TYPE"},
+			Value:       "bolt",
+			Destination: &conf.Shortener.Store.DBType,
+		},
+		&cli.StringFlag{
+			Name:        "redis",
+			Usage:       "redis host address",
+			EnvVars:     []string{"REDIS"},
+			Value:       "localhost:6379/0",
+			Destination: &conf.Shortener.Store.Redis,
+		},
+		&cli.BoolFlag{
+			Name:        "debug",
+			Aliases:     []string{"d"},
+			Usage:       "log level: debug",
+			Destination: &conf.Debug,
+		},
+	}
+
+	sort.Sort(cli.FlagsByName(app.Flags))
 
 	app.Run(os.Args)
 }

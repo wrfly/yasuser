@@ -1,6 +1,6 @@
-.PHONY: build test
+.PHONY: build test dev img push-img
 
-NAME = short-url
+NAME = yasuser
 
 VERSION := $(shell cat VERSION)
 COMMITID := $(shell git rev-parse --short HEAD)
@@ -22,7 +22,7 @@ dev: build
 	./$(NAME) -d
 
 img:
-	docker build -t wrfly/short-url .
+	docker build -t wrfly/$(NAME) .
 
 push-img:
-	docker push wrfly/short-url
+	docker push wrfly/$(NAME)

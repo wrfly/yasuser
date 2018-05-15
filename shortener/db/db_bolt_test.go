@@ -10,7 +10,7 @@ import (
 func TestBoltDB(t *testing.T) {
 	key := "5d41402abc4b2a76b9719d911017c592"
 	URL := "http://kfd.me"
-	db, err := NewBoltDB("/tmp/myyxxy.db")
+	db, err := newBoltDB("/tmp/myyxxy.db")
 	assert.NoError(t, err)
 	defer db.Close()
 
@@ -32,7 +32,7 @@ func TestBoltDB(t *testing.T) {
 }
 
 func TestBoltDBLen(t *testing.T) {
-	db, err := NewBoltDB("/tmp/myyxxy.db")
+	db, err := newBoltDB("/tmp/myyxxy.db")
 	assert.NoError(t, err)
 	defer db.Close()
 

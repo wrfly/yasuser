@@ -1,11 +1,11 @@
-package handler
+package shortener
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wrfly/short-url/handler/db"
+	"github.com/wrfly/yasuser/shortener/db"
 )
 
 func TestShorter(t *testing.T) {

@@ -1,11 +1,10 @@
 version: "3"
 services:
-  short-url:
-    image: wrfly/short-url:latest
+  yasuser:
+    image: wrfly/yasuser:latest
     ports:
       - 8084:8080
     environment:
-      - DB_PATH=/data/short-url.db
       - PREFIX=https://u.kfd.me
     volumes:
       - ./:/data
