@@ -72,7 +72,7 @@ VERSION:
 			Name:        "db-path",
 			Usage:       "database path",
 			EnvVars:     []string{"DB_PATH"},
-			Value:       "yasuser.db",
+			Value:       "/data/yasuser.db",
 			Destination: &conf.Shortener.Store.DBPath,
 		},
 		&cli.StringFlag{
