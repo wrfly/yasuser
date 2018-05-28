@@ -1,0 +1,9 @@
+debug: false
+shortener:
+  store:
+    dbpath: ./yasuser.db
+    dbtype: bolt
+    redis: localhost:6379
+server:
+  prefix: https://u.kfd.me
+  port: 8084

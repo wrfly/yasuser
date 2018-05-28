@@ -19,7 +19,7 @@ test:
 	go test --cover .
 
 dev: build
-	./$(NAME) -d
+	./$(NAME)
 
 img:
 	docker build -t wrfly/$(NAME) .
