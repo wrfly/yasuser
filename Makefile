@@ -22,7 +22,8 @@ dev: build
 	YASUSER_DEBUG=true ./$(NAME)
 
 img:
-	docker build -t wrfly/$(NAME):$(VERSION) .
+	docker build -t wrfly/$(NAME):$(VERSION) -t wrfly/$(NAME) .
 
 push-img:
+	docker push wrfly/$(NAME)
 	docker push wrfly/$(NAME):$(VERSION)
