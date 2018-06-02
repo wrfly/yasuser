@@ -39,7 +39,7 @@ https://u.kfd.me/1
 - [x] it works
 - [x] blob database
 - [x] length and validate
-- [ ] memory cache
+- [x] memory cache
 - [ ] redis database
 - [ ] customization
 - [ ] TTL of URL

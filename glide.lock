@@ -1,8 +1,12 @@
-hash: e42208e43fea968772e52f07590f39352ed505679ada15726a083ddd10f6235a
-updated: 2018-05-16T02:51:08.8319834+08:00
+hash: 2aec8281586c87ac016db6790664adeb2b983226ee71a8ca9c7b1d19bd056c2b
+updated: 2018-06-03T00:41:13.536850378+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
+- name: github.com/cespare/xxhash
+  version: 48099fad606eafc26e3a569fad19ff510fff4df6
+- name: github.com/coocood/freecache
+  version: f3233c8095b26cd0dea0b136b931708c05defa08
 - name: github.com/gin-contrib/sse
   version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin

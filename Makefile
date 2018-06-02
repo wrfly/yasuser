@@ -19,7 +19,7 @@ test:
 	go test --cover .
 
 dev: build
-	./$(NAME)
+	YASUSER_DEBUG=true ./$(NAME)
 
 img:
 	docker build -t wrfly/$(NAME) .

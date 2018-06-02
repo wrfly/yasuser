@@ -2,7 +2,6 @@ package routes
 
 import (
 	"fmt"
-	"net/url"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,7 @@ var urlBufferPool = sync.Pool{
 // Serve routes
 func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	port := fmt.Sprintf(":%d", conf.Port)
-	logrus.Infof("Service starting at [ %s ], with prefix [ %s ]",
+	logrus.Infof("Service starting at [ http://0.0.0.0%s ], with prefix [ %s ]",
 		port, conf.Prefix)
 
 	srv := gin.New()
@@ -32,25 +31,4 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	srv.POST("/", handleLongURL(conf.Prefix, shortener))
 
 	return srv.Run(port)
-}
-
-func invalidURL(URL string) bool {
-	logrus.Debugf("get url: %s", URL)
-	u, err := url.Parse(URL)
-	if err != nil {
-		return true
-	}
-
-	switch u.Scheme {
-	case "":
-		return true
-	case "http":
-	case "https":
-	case "ftp":
-	case "tcp":
-	default:
-		return true
-	}
-
-	return false
 }
