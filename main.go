@@ -61,7 +61,12 @@ func main() {
 				gin.SetMode(gin.ReleaseMode)
 			}
 
-			return routes.Serve(conf.Server, shortener.New(conf.Shortener))
+			err := routes.Serve(conf.Server, shortener.New(conf.Shortener))
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			return nil
 		},
 	}
 	app.CustomAppHelpTemplate = `NAME:
