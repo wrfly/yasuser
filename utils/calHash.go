@@ -19,7 +19,7 @@ func MD5(in string) string {
 }
 
 // CalHash base62, max is 56800235583
-func CalHash(in int) string {
+func CalHash(in int64) string {
 	s := encode(in)
 	r := ""
 	for i := 0; i < 6-len(s); i++ {
@@ -31,7 +31,7 @@ func CalHash(in int) string {
 /**
  * 编码 整数 为 base62 字符串
  */
-func encode(number int) []byte {
+func encode(number int64) []byte {
 	if number == 0 {
 		return []byte("0")
 	}

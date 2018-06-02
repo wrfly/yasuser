@@ -3,10 +3,10 @@ package routes
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"github.com/wrfly/yasuser/shortener"
 )
 
@@ -23,8 +23,10 @@ func handleIndex(prefix string) gin.HandlerFunc {
 			c.String(200, example)
 		} else {
 			// normal web browser
-			// c.HTML(200, "index", UA)
-			c.String(200, UA)
+			// TODO: a pretty index web page
+			welcome := fmt.Sprintf("Welcome [%s], you'll see a pretty index page later...",
+				UA)
+			c.String(200, welcome)
 		}
 	}
 }
@@ -62,8 +64,26 @@ func handleLongURL(prefix string, s shortener.Shortener) gin.HandlerFunc {
 
 		short := s.Shorten(longURL)
 		shortURL := fmt.Sprintf("%s/%s", prefix, short)
-		logrus.Debugf("shorten URL: [ %s ] -> [ %s ]",
-			longURL, shortURL)
 		c.String(200, fmt.Sprintln(shortURL))
 	}
+}
+
+func invalidURL(URL string) bool {
+	u, err := url.Parse(URL)
+	if err != nil {
+		return true
+	}
+
+	switch u.Scheme {
+	case "":
+		return true
+	case "http":
+	case "https":
+	case "ftp":
+	case "tcp":
+	default:
+		return true
+	}
+
+	return false
 }

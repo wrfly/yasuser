@@ -3,10 +3,12 @@
 > Yet another self-hosted URL shortener.
 
 *Short* or *Restore* your URL, like <https://git.io/> or <https://goo.gl/>
-but under **your** control.
+but under **YOUR** control.
 
-Master: [![Master Build Status](https://travis-ci.org/wrfly/yasuser.svg?branch=master)](https://travis-ci.org/wrfly/yasuser)
-Develop: [![Develop Build Status](https://travis-ci.org/wrfly/yasuser.svg?branch=develop)](https://travis-ci.org/wrfly/yasuser)
+[![Master Build Status](https://travis-ci.org/wrfly/yasuser.svg?branch=master)](https://travis-ci.org/wrfly/yasuser)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wrfly/yasuser)](https://goreportcard.com/report/github.com/wrfly/yasuser)
+[![license](https://img.shields.io/github/license/wrfly/yasuser.svg)](https://github.com/wrfly/yasuser/blob/master/LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/wrfly/yasuser.svg)](https://hub.docker.com/r/wrfly/yasuser/)
 
 ## Run
 
@@ -37,7 +39,7 @@ https://u.kfd.me/1
 - [x] it works
 - [x] blob database
 - [x] length and validate
-- [ ] memory cache
+- [x] memory cache
 - [ ] redis database
 - [ ] customization
 - [ ] TTL of URL

@@ -18,11 +18,13 @@ import:
   subpackages:
   - ssh/terminal
 - package: gopkg.in/go-playground/validator.v8
-  repo: https://github.com/go-playground/validator.git
   version: ^8.18.2
+  repo: https://github.com/go-playground/validator.git
 - package: gopkg.in/yaml.v2
-  repo: https://github.com/go-yaml/yaml.git
   version: ^2.2.1
+  repo: https://github.com/go-yaml/yaml.git
+- package: github.com/coocood/freecache
+  version: ^1.0.1
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.2.1

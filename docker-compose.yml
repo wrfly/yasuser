@@ -2,9 +2,15 @@ version: "3"
 services:
   yasuser:
     image: wrfly/yasuser:latest
+    restart: unless-stopped
     ports:
-      - 8084:8080
+      - 80:8080
     environment:
-      - PREFIX=https://u.kfd.me
+      - YASUSER_DEBUG=false
+      - YASUSER_SHORTENER_STORE_DBPATH=./yasuser.db
+      - YASUSER_SHORTENER_STORE_DBTYPE=bolt
+      - YASUSER_SHORTENER_STORE_REDIS=localhost:6379
+      - YASUSER_SERVER_PREFIX=https://u.kfd.me
+      - YASUSER_SERVER_PORT=8084
     volumes:
       - ./:/data

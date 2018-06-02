@@ -1,9 +1,13 @@
 package routes
 
 import (
+	"context"
 	"fmt"
-	"net/url"
+	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -21,36 +25,35 @@ var urlBufferPool = sync.Pool{
 
 // Serve routes
 func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
-	port := fmt.Sprintf(":%d", conf.Port)
-	logrus.Infof("Service starting at [ %s ], with prefix [ %s ]",
-		port, conf.Prefix)
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
-	srv := gin.New()
+	engine := gin.New()
+	engine.GET("/", handleIndex(conf.Prefix))
+	engine.GET("/:s", handleShortURL(shortener))
+	engine.POST("/", handleLongURL(conf.Prefix, shortener))
 
-	srv.GET("/", handleIndex(conf.Prefix))
-	srv.GET("/:s", handleShortURL(shortener))
-	srv.POST("/", handleLongURL(conf.Prefix, shortener))
-
-	return srv.Run(port)
-}
-
-func invalidURL(URL string) bool {
-	logrus.Debugf("get url: %s", URL)
-	u, err := url.Parse(URL)
-	if err != nil {
-		return true
+	httpServer := http.Server{
+		Addr:    fmt.Sprintf(":%d", conf.Port),
+		Handler: engine,
 	}
 
-	switch u.Scheme {
-	case "":
-		return true
-	case "http":
-	case "https":
-	case "ftp":
-	case "tcp":
-	default:
-		return true
-	}
+	errChan := make(chan error)
+	go func() {
+		errChan <- httpServer.ListenAndServe()
+	}()
+	logrus.Infof("Server running at [ http://0.0.0.0:%s ], with prefix [ %s ]",
+		conf.Port, conf.Prefix)
 
-	return false
+	select {
+	case <-sigChan:
+		logrus.Info("Shuting down the server")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		err := httpServer.Shutdown(ctx)
+		logrus.Info("Server shutdown")
+		return err
+	case err := <-errChan:
+		return err
+	}
 }
