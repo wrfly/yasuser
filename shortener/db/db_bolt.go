@@ -28,7 +28,7 @@ func newBoltDB(path string) (*boltDB, error) {
 		return nil, fmt.Errorf("db is nil")
 	}
 
-	initLength := int64(-1)
+	initLength := int64(99)
 	b := &boltDB{
 		db:     db,
 		length: &initLength,
@@ -66,18 +66,8 @@ func (b *boltDB) createBucket(bucketName string) error {
 	})
 }
 
-func (b *boltDB) Len() (int64, error) {
-	if atomic.LoadInt64(b.length) != -1 {
-		return *b.length + 1, nil
-	}
-
-	err := b.db.Update(func(tx *bolt.Tx) error {
-		bkt := tx.Bucket([]byte(shortBucket))
-		atomic.StoreInt64(b.length, int64(bkt.Stats().KeyN))
-		return nil
-	})
-
-	return atomic.LoadInt64(b.length) + 1, err
+func (b *boltDB) Len() int64 {
+	return atomic.LoadInt64(b.length)
 }
 
 func (b *boltDB) SetLong(shortURL, longURL string) error {

@@ -19,6 +19,7 @@ test:
 	go test --cover .
 
 dev: build
+	rm -f $(NAME).db
 	YASUSER_DEBUG=true ./$(NAME)
 
 img:

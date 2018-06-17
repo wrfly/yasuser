@@ -63,13 +63,7 @@ func (stner db_Shortener) md5Shortener(md5sum, longURL string) string {
 	}
 	logrus.Debugf("url %s not found, create a new one", longURL)
 
-	n, err := stner.db.Len()
-	if err != nil {
-		logrus.Errorf("get db lenth error: %s", err)
-		return ""
-	}
-
-	shortURL = utils.CalHash(n)
+	shortURL = utils.CalHash(stner.db.Len())
 	shortURL = strings.TrimLeft(shortURL, "0")
 
 	go stner.store(shortURL, md5sum, longURL)

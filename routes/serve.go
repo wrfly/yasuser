@@ -42,7 +42,7 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	go func() {
 		errChan <- httpServer.ListenAndServe()
 	}()
-	logrus.Infof("Server running at [ http://0.0.0.0:%s ], with prefix [ %s ]",
+	logrus.Infof("Server running at [ http://0.0.0.0:%d ], with prefix [ %s ]",
 		conf.Port, conf.Prefix)
 
 	select {

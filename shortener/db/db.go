@@ -18,7 +18,7 @@ const (
 // md5sum is the URL's md5sum
 type Database interface {
 	Close() error
-	Len() (int64, error)
+	Len() int64
 	SetShort(md5sum, shortURL string) error
 	GetShort(md5sum string) (short string, err error)
 	SetLong(shortURL, longURL string) error
