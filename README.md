@@ -40,7 +40,7 @@ https://u.kfd.me/1
 - [x] blob database
 - [x] length and validate
 - [x] memory cache
-- [ ] redis database
+- [x] redis database
 - [ ] customization
 - [ ] TTL of URL
 - [ ] rate limit

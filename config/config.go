@@ -18,7 +18,7 @@ type SrvConfig struct {
 type StoreConfig struct {
 	DBPath string `default:"./yasuser.db"`
 	DBType string `default:"bolt"`
-	Redis  string `default:"localhost:6379"`
+	Redis  string `default:"redis://localhost:6379"`
 }
 
 type ShortenerConfig struct {

@@ -28,7 +28,6 @@ func newBoltDB(path string) (*boltDB, error) {
 		return nil, fmt.Errorf("db is nil")
 	}
 
-	initLength := int64(99)
 	b := &boltDB{
 		db:     db,
 		length: &initLength,

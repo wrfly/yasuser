@@ -63,6 +63,10 @@ func handleLongURL(prefix string, s shortener.Shortener) gin.HandlerFunc {
 		}
 
 		short := s.Shorten(longURL)
+		if short == "" {
+			c.String(500, "something bad happend")
+			return
+		}
 		shortURL := fmt.Sprintf("%s/%s", prefix, short)
 		c.String(200, fmt.Sprintln(shortURL))
 	}
@@ -75,15 +79,9 @@ func invalidURL(URL string) bool {
 	}
 
 	switch u.Scheme {
-	case "":
-		return true
-	case "http":
-	case "https":
-	case "ftp":
-	case "tcp":
+	case "http", "https", "ftp", "tcp":
+		return false
 	default:
 		return true
 	}
-
-	return false
 }
