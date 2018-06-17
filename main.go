@@ -72,14 +72,15 @@ func main() {
 	app.CustomAppHelpTemplate = `NAME:
 	{{.Name}} - {{.Usage}}
 
-OPTIONS:
-	{{range .VisibleFlags}}{{.}}
-	{{end}}
 AUTHOR:
 	{{range .Authors}}{{ . }}
 	{{end}}
 VERSION:
 	{{.Version}}
-`
+
+OPTIONS:
+	{{range .VisibleFlags}}{{.}}
+	{{end}}`
+
 	app.Run(os.Args)
 }

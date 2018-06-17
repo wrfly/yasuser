@@ -13,12 +13,14 @@ const (
 	REDIS = "redis"
 )
 
+var initLength int64 = 99
+
 // Database is a KV storage, there two relationships
 // md5sum -> short & short -> long
 // md5sum is the URL's md5sum
 type Database interface {
 	Close() error
-	Len() (int64, error)
+	Len() int64
 	SetShort(md5sum, shortURL string) error
 	GetShort(md5sum string) (short string, err error)
 	SetLong(shortURL, longURL string) error
@@ -32,7 +34,7 @@ func New(conf config.StoreConfig) (Database, error) {
 	case BOLT:
 		return newBoltDB(conf.DBPath)
 	case REDIS:
-		// TODO: newRedisDB()
+		return newRedisDB(conf.Redis)
 	}
 	return nil, fmt.Errorf("Unknown DB Type: %s", conf.DBType)
 }

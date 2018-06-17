@@ -1,5 +1,5 @@
-hash: 2aec8281586c87ac016db6790664adeb2b983226ee71a8ca9c7b1d19bd056c2b
-updated: 2018-06-03T00:41:13.536850378+08:00
+hash: b9fa42025078285136e0cc6f153d9d6b705af2932818b270fe13a42b128e53a7
+updated: 2018-06-17T18:53:33.856566824+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -14,6 +14,16 @@ imports:
   subpackages:
   - binding
   - render
+- name: github.com/go-redis/redis
+  version: 83fb42932f6145ce52df09860384a4653d2d332a
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+  - internal/singleflight
+  - internal/util
 - name: github.com/golang/protobuf
   version: 927b65914520a8b7d44f5c9057611cfec6b2e2d0
   subpackages:
@@ -56,6 +66,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
   - assert
