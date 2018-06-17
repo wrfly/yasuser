@@ -37,23 +37,27 @@ func New(conf config.ShortenerConfig) Shortener {
 
 // Shorten a long URL
 func (stner db_Shortener) Shorten(longURL string) string {
-	md5sum := utils.MD5(longURL)
+	// xxhash is faster than md5sum
+	hashSum := utils.XXHash(longURL)
+
 	// cache first
-	if shortURL, err := stner.cacher.Get(md5sum); err == nil {
+	if shortURL, err := stner.cacher.Get(hashSum); err == nil {
 		return shortURL
 	}
+
 	// then the db
-	shortURL := stner.md5Shortener(md5sum, longURL)
+	shortURL := stner.getShortFromHash(hashSum, longURL)
 	if shortURL != "" {
-		stner.cacher.Set(md5sum, shortURL)
+		stner.cacher.Set(hashSum, shortURL)
 	}
 	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]", longURL, shortURL)
+
 	return shortURL
 }
 
-func (stner db_Shortener) md5Shortener(md5sum, longURL string) string {
+func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
 	// return from db if found, otherwise create a new one
-	shortURL, err := stner.db.GetShort(md5sum)
+	shortURL, err := stner.db.GetShort(hashSum)
 	if err == nil {
 		return shortURL
 	}
@@ -63,10 +67,9 @@ func (stner db_Shortener) md5Shortener(md5sum, longURL string) string {
 	}
 	logrus.Debugf("url %s not found, create a new one", longURL)
 
-	shortURL = utils.CalHash(stner.db.Len())
-	shortURL = strings.TrimLeft(shortURL, "0")
+	shortURL = strings.TrimLeft(utils.CalHash(stner.db.Len()), "0")
 
-	go stner.store(shortURL, md5sum, longURL)
+	go stner.store(shortURL, hashSum, longURL)
 
 	return shortURL
 }
@@ -94,12 +97,12 @@ func (stner db_Shortener) Restore(shortURL string) string {
 }
 
 // Restore a short URL
-func (stner db_Shortener) store(shortURL, md5sum, longURL string) {
+func (stner db_Shortener) store(shortURL, hashSum, longURL string) {
 	if err := stner.db.SetLong(shortURL, longURL); err != nil {
 		logrus.Errorf("set long error: %s", err)
 	}
 
-	if err := stner.db.SetShort(md5sum, shortURL); err != nil {
+	if err := stner.db.SetShort(hashSum, shortURL); err != nil {
 		logrus.Errorf("set shortURL error: %s", err)
 	}
 }

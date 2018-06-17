@@ -1,5 +1,5 @@
-hash: b9fa42025078285136e0cc6f153d9d6b705af2932818b270fe13a42b128e53a7
-updated: 2018-06-17T18:53:33.856566824+08:00
+hash: 4db750b2bf6656c50ba86bef129fd174ff615114c58dbccd8a441690d6353fbd
+updated: 2018-06-18T00:01:49.358717832+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -30,6 +30,8 @@ imports:
   - proto
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
+- name: github.com/OneOfOne/xxhash
+  version: 6def279d2ce6c81a79dd1c1be580f03bb216fb8a
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/ugorji/go

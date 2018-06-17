@@ -27,6 +27,8 @@ import:
   version: ^1.0.1
 - package: github.com/go-redis/redis
   version: ^6.12.0
+- package: github.com/OneOfOne/xxhash
+  version: ^1.2.2
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.2.1
