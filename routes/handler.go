@@ -22,11 +22,7 @@ func handleIndex(prefix string) gin.HandlerFunc {
 			// query from curl
 			c.String(200, example)
 		} else {
-			// normal web browser
-			// TODO: a pretty index web page
-			welcome := fmt.Sprintf("Welcome [%s], you'll see a pretty index page later...",
-				UA)
-			c.String(200, welcome)
+			c.Redirect(301, "/index.html")
 		}
 	}
 }

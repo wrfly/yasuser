@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,9 +34,34 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	engine.GET("/:s", handleShortURL(shortener))
 	engine.POST("/", handleLongURL(conf.Prefix, shortener))
 
+	handler := http.NewServeMux()
+	handler.Handle("/", engine)
+	for _, f := range AssetNames() {
+		bs, _ := Asset(f)
+		switch f {
+		case "index.html":
+			t, _ := template.New("index").Parse(fmt.Sprintf("%s", bs))
+			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
+				t.Execute(w, map[string]string{
+					"UA": r.UserAgent(),
+				})
+			})
+		case "main.css":
+			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "text/css")
+				w.Write(bs)
+			})
+		default:
+			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
+				w.Write(bs)
+			})
+
+		}
+	}
+
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),
-		Handler: engine,
+		Handler: handler,
 	}
 
 	errChan := make(chan error)
