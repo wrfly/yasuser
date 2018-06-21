@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
 	"github.com/wrfly/yasuser/config"
 	stner "github.com/wrfly/yasuser/shortener"
 )
@@ -28,10 +29,16 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
+	srv := server{
+		domain: conf.Domain,
+		stener: shortener,
+	}
+	srv.init()
+
 	engine := gin.New()
-	engine.GET("/", handleIndex(conf.Prefix))
-	engine.GET("/:s", handleShortURL(shortener))
-	engine.POST("/", handleLongURL(conf.Prefix, shortener))
+	engine.GET("/", srv.handleIndex())
+	engine.POST("/", srv.handleLongURL())
+	engine.GET("/:URI", srv.handleURI())
 
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),
@@ -42,8 +49,8 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	go func() {
 		errChan <- httpServer.ListenAndServe()
 	}()
-	logrus.Infof("Server running at [ http://0.0.0.0:%d ], with prefix [ %s ]",
-		conf.Port, conf.Prefix)
+	logrus.Infof("Server running at [ http://0.0.0.0:%d ], with domain [ %s ]",
+		conf.Port, conf.Domain)
 
 	select {
 	case <-sigChan:

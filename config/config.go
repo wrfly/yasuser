@@ -11,7 +11,7 @@ import (
 )
 
 type SrvConfig struct {
-	Prefix string `default:"https://u.kfd.me"`
+	Domain string `default:"u.kfd.me"`
 	Port   int    `default:"8084"`
 }
 
@@ -42,6 +42,9 @@ func New() *Config {
 }
 
 func (c *Config) Parse(filePath string) {
+	if filePath == "" {
+		return
+	}
 	f, err := os.Open(filePath)
 	if err != nil {
 		logrus.Fatal(utils.AddLineNum(err))

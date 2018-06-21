@@ -51,4 +51,4 @@ https://u.kfd.me/1
 - [ ] statistic
   - [ ] URL status
   - [ ] runtime metrics
-- [ ] UI index
+- [x] UI index

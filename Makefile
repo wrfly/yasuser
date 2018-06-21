@@ -1,5 +1,3 @@
-.PHONY: build test dev img push-img
-
 NAME = yasuser
 
 VERSION := $(shell cat VERSION)
@@ -9,22 +7,37 @@ BUILDAT := $(shell date +%Y-%m-%d)
 CTIMEVAR = -X main.CommitID=$(COMMITID) \
         -X main.Version=$(VERSION) \
         -X main.BuildAt=$(BUILDAT)
-GO_LDFLAGS = -ldflags "-w $(CTIMEVAR)"
-GO_LDFLAGS_STATIC = -ldflags "-w $(CTIMEVAR) -extldflags -static"
+GO_LDFLAGS = -ldflags "-w $(CTIMEVAR) -s"
 
+.PHONY: build
 build:
 	go build -tags "$(BUILDTAGS)" $(GO_LDFLAGS) -o $(NAME) .
 
+.PHONY: test
 test:
 	go test --cover .
 
-dev: build
+.PHONY: dev
+dev: asset build
 	rm -f $(NAME).db
 	YASUSER_DEBUG=true ./$(NAME)
 
+.PHONY: img
 img:
 	docker build -t wrfly/$(NAME):$(VERSION) -t wrfly/$(NAME) .
 
+.PHONY: push-img
 push-img:
 	docker push wrfly/$(NAME)
 	docker push wrfly/$(NAME):$(VERSION)
+
+.PHONY: tools
+tools:
+	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/elazarl/go-bindata-assetfs/...
+
+.PHONY: asset
+asset:
+	go-bindata-assetfs -prefix routes/index -pkg routes routes/index/...
+	mv bindata_assetfs.go routes/asset.go
+	gofmt -w routes/asset.go

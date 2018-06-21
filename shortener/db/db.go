@@ -16,15 +16,15 @@ const (
 var initLength int64 = 99
 
 // Database is a KV storage, there two relationships
-// md5sum -> short & short -> long
-// md5sum is the URL's md5sum
+// hashSum -> short & short -> long
+// hashSum is the URL's hashSum
 type Database interface {
 	Close() error
 	Len() int64
-	SetShort(md5sum, shortURL string) error
-	GetShort(md5sum string) (short string, err error)
+	SetShort(hashSum, shortURL string) error
+	GetShort(hashSum string) (short string, err error)
 	SetLong(shortURL, longURL string) error
-	GetLong(md5sum string) (long string, err error)
+	GetLong(hashSum string) (long string, err error)
 }
 
 // New DB storage

@@ -9,5 +9,6 @@ RUN cd ${PKG} && \
 
 FROM alpine
 COPY --from=0 /yasuser /usr/local/bin/
+COPY config.yml /etc/yasuser-config.yml
 VOLUME [ "/data" ]
-CMD [ "yasuser" ]
+CMD [ "yasuser", "-c", "/etc/yasuser-config.yml" ]

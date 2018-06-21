@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Yasuser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="main.css" />
+</head>
+<body>
+    <main>
+        <h1>yasuser</h1>
+        Hello [ {{ .UA }} ]
+        <form>
+            URL:
+            <input type="text" placeholder="{{ .domain }}" id="url">
+            <input type="button" value="GO" id="go">
+        </form>
+        
+        <p><a href="https://github.com/wrfly/yasuser">@yasuser</a> | wrfly</p>
+    </main>
+    <footer>
+    </footer>
+</body>
+<script src="main.js"></script>
+</html>

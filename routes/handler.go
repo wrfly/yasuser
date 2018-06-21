@@ -2,47 +2,100 @@ package routes
 
 import (
 	"fmt"
+	"html/template"
 	"io"
+	"net/http"
 	"net/url"
 	"regexp"
 
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"github.com/wrfly/yasuser/shortener"
 )
 
-func handleIndex(prefix string) gin.HandlerFunc {
-	example := fmt.Sprintf("curl %s -d \"%s\"",
-		prefix, "http://longlonglong.com/long/long/long?a=1&b=2")
+type server struct {
+	domain        string
+	scheme        string
+	stener        shortener.Shortener
+	indexTemplate *template.Template
+	fileMap       map[string]bool
+}
 
+func (s *server) init() {
+	// init
+	fileMap := map[string]bool{}
+	for _, fileName := range AssetNames() {
+		fileMap[fileName] = true
+	}
+	s.fileMap = fileMap
+
+	bs, err := Asset("index.html")
+	if err != nil {
+		panic(err)
+	}
+	s.indexTemplate, err = template.New("index").Parse(string(bs))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (s *server) handleIndex() gin.HandlerFunc {
 	curlUA := regexp.MustCompile("curl*")
 
 	return func(c *gin.Context) {
 		UA := c.Request.UserAgent()
+		if s.scheme == "" {
+			if c.Request.URL.Scheme == "" {
+				s.scheme = "http"
+			} else {
+				s.scheme = "https"
+			}
+		}
+
 		if matched := curlUA.MatchString(UA); matched {
 			// query from curl
-			c.String(200, example)
+			c.String(200, fmt.Sprintf("curl %s://%s -d \"%s\"", s.scheme,
+				s.domain, "http://longlonglong.com/long/long/long?a=1&b=2"))
 		} else {
-			// normal web browser
-			// TODO: a pretty index web page
-			welcome := fmt.Sprintf("Welcome [%s], you'll see a pretty index page later...",
-				UA)
-			c.String(200, welcome)
+			// visit from a web browser
+			s.indexTemplate.Execute(c.Writer, map[string]string{
+				"UA":     c.Request.UserAgent(),
+				"domain": s.scheme + "://" + s.domain,
+			})
 		}
 	}
 }
 
-func handleShortURL(s shortener.Shortener) gin.HandlerFunc {
+func (s *server) handleURI() gin.HandlerFunc {
+
 	return func(c *gin.Context) {
-		realURL := s.Restore(c.Param("s"))
-		if realURL == "" {
+		URI := c.Param("URI")
+
+		switch {
+		case URI == "":
 			c.String(404, fmt.Sprintln("not found"))
-		} else {
-			c.Redirect(302, realURL)
+
+		case s.fileMap[URI]:
+			// handle static files
+			http.FileServer(&assetfs.AssetFS{
+				Asset:     Asset,
+				AssetDir:  AssetDir,
+				AssetInfo: AssetInfo,
+				Prefix:    "/",
+			}).ServeHTTP(c.Writer, c.Request)
+
+		default:
+			// handle shortURL
+			if realURL := s.stener.Restore(URI); realURL == "" {
+				c.String(404, fmt.Sprintln("not found"))
+			} else {
+				c.Redirect(302, realURL)
+			}
 		}
 	}
 }
 
-func handleLongURL(prefix string, s shortener.Shortener) gin.HandlerFunc {
+func (s *server) handleLongURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		buf := urlBufferPool.Get().([]byte)
 		defer urlBufferPool.Put(buf)
@@ -62,12 +115,12 @@ func handleLongURL(prefix string, s shortener.Shortener) gin.HandlerFunc {
 			return
 		}
 
-		short := s.Shorten(longURL)
+		short := s.stener.Shorten(longURL)
 		if short == "" {
 			c.String(500, "something bad happend")
 			return
 		}
-		shortURL := fmt.Sprintf("%s/%s", prefix, short)
+		shortURL := fmt.Sprintf("%s://%s/%s", s.scheme, s.domain, short)
 		c.String(200, fmt.Sprintln(shortURL))
 	}
 }
