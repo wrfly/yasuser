@@ -14,7 +14,10 @@ but under **YOUR** control.
 
 ```sh
 docker run --name yasuser -dti \
-    -p 8084:8080 -e PREFIX=https://your.domain.com \
+    -p 8080:8084 \
+    -e YASUSER_SHORTENER_STORE_DBPATH=/data/yasuser.db \
+    -e YASUSER_SERVER_DOMAIN=your.domain.com \
+    -v `pwd`:/data \
     wrfly/yasuser
 ```
 
@@ -25,11 +28,11 @@ Or use the [docker-compose.yml](./docker-compose.yml).
 ```bash
 # short your URL
 ➜  ~ curl https://u.kfd.me -d "https://kfd.me"
-https://u.kfd.me/1
+https://u.kfd.me/1C
 ➜  ~
 
 # restore it
-➜  ~ curl http://u.kfd.me/1
+➜  ~ curl http://u.kfd.me/1C
 <a href="https://kfd.me">Found</a>.
 
 ```
