@@ -1,5 +1,5 @@
-hash: 4db750b2bf6656c50ba86bef129fd174ff615114c58dbccd8a441690d6353fbd
-updated: 2018-06-18T00:01:49.358717832+08:00
+hash: 623e20263e37afadb62bb9df129b3441901de6485b0a3a4eeb5290b262e31313
+updated: 2018-06-22T00:17:33.835892141+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -7,6 +7,8 @@ imports:
   version: 48099fad606eafc26e3a569fad19ff510fff4df6
 - name: github.com/coocood/freecache
   version: f3233c8095b26cd0dea0b136b931708c05defa08
+- name: github.com/elazarl/go-bindata-assetfs
+  version: 30f82fa23fd844bd5bb1e5f216db87fd77b5eb43
 - name: github.com/gin-contrib/sse
   version: 22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae
 - name: github.com/gin-gonic/gin

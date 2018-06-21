@@ -5,13 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Yasuser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="main.js"></script>
     <link rel="stylesheet" type="text/css" href="main.css" />
 </head>
 <body>
-    <h1>yasuser</h1>
-    <p>123</p>
-    Hello [ {{ .UA }} ]
-    <p>@{{ .domain }}</p>
+    <main>
+        <h1>yasuser</h1>
+        Hello [ {{ .UA }} ]
+        <form>
+            URL:
+            <input type="text" placeholder="{{ .domain }}" id="url">
+            <input type="button" value="GO" id="go">
+        </form>
+        
+        <p>@yasuser</p>
+    </main>
+    <footer>
+    </footer>
 </body>
+<script src="main.js"></script>
 </html>

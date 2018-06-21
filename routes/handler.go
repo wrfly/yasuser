@@ -120,7 +120,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			c.String(500, "something bad happend")
 			return
 		}
-		shortURL := fmt.Sprintf("%s/%s", s.domain, short)
+		shortURL := fmt.Sprintf("%s://%s/%s", s.scheme, s.domain, short)
 		c.String(200, fmt.Sprintln(shortURL))
 	}
 }
