@@ -11,7 +11,7 @@ import (
 )
 
 type SrvConfig struct {
-	Prefix string `default:"https://u.kfd.me"`
+	Domain string `default:"u.kfd.me"`
 	Port   int    `default:"8084"`
 }
 

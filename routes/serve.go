@@ -3,7 +3,6 @@ package routes
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
 	"github.com/wrfly/yasuser/config"
 	stner "github.com/wrfly/yasuser/shortener"
 )
@@ -29,47 +29,28 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
-	engine := gin.New()
-	engine.GET("/", handleIndex(conf.Prefix))
-	engine.GET("/:s", handleShortURL(shortener))
-	engine.POST("/", handleLongURL(conf.Prefix, shortener))
-
-	handler := http.NewServeMux()
-	handler.Handle("/", engine)
-	for _, f := range AssetNames() {
-		bs, _ := Asset(f)
-		switch f {
-		case "index.html":
-			t, _ := template.New("index").Parse(fmt.Sprintf("%s", bs))
-			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
-				t.Execute(w, map[string]string{
-					"UA": r.UserAgent(),
-				})
-			})
-		case "main.css":
-			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "text/css")
-				w.Write(bs)
-			})
-		default:
-			handler.HandleFunc("/"+f, func(w http.ResponseWriter, r *http.Request) {
-				w.Write(bs)
-			})
-
-		}
+	srv := server{
+		domain: conf.Domain,
+		stener: shortener,
 	}
+	srv.init()
+
+	engine := gin.New()
+	engine.GET("/", srv.handleIndex())
+	engine.POST("/", srv.handleLongURL())
+	engine.GET("/:URI", srv.handleURI())
 
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),
-		Handler: handler,
+		Handler: engine,
 	}
 
 	errChan := make(chan error)
 	go func() {
 		errChan <- httpServer.ListenAndServe()
 	}()
-	logrus.Infof("Server running at [ http://0.0.0.0:%d ], with prefix [ %s ]",
-		conf.Port, conf.Prefix)
+	logrus.Infof("Server running at [ http://0.0.0.0:%d ], with domain [ %s ]",
+		conf.Port, conf.Domain)
 
 	select {
 	case <-sigChan:

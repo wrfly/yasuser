@@ -18,7 +18,7 @@ test:
 	go test --cover .
 
 .PHONY: dev
-dev: index build
+dev: asset build
 	rm -f $(NAME).db
 	YASUSER_DEBUG=true ./$(NAME)
 
@@ -34,8 +34,10 @@ push-img:
 .PHONY: tools
 tools:
 	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/elazarl/go-bindata-assetfs/...
 
-.PHONY: index
-index:
-	go-bindata -o routes/asset.go -prefix routes/index -pkg routes routes/index/...
+.PHONY: asset
+asset:
+	go-bindata-assetfs -prefix routes/index -pkg routes routes/index/...
+	mv bindata_assetfs.go routes/asset.go
 	gofmt -w routes/asset.go
