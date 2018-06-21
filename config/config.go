@@ -42,6 +42,9 @@ func New() *Config {
 }
 
 func (c *Config) Parse(filePath string) {
+	if filePath == "" {
+		return
+	}
 	f, err := os.Open(filePath)
 	if err != nil {
 		logrus.Fatal(utils.AddLineNum(err))
