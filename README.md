@@ -37,6 +37,10 @@ https://u.kfd.me/1C
 
 ```
 
+Or just visit the web page:
+
+![index](index.png)
+
 ## Features
 
 - [x] it works

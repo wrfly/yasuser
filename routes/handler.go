@@ -59,7 +59,6 @@ func (s *server) handleIndex() gin.HandlerFunc {
 		} else {
 			// visit from a web browser
 			s.indexTemplate.Execute(c.Writer, map[string]string{
-				"UA":     c.Request.UserAgent(),
 				"domain": s.scheme + "://" + s.domain,
 			})
 		}
