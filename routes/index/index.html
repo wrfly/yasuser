@@ -5,21 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Yasuser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="stylesheet" type="text/css" href="main.css"/>
+    <script src="clipboard.min.js"></script>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <main>
         <h1>yasuser</h1>
-        Hello [ {{ .UA }} ]
-        <form>
-            URL:
-            <input type="text" placeholder="{{ .domain }}" id="url">
-            <input type="button" value="GO" id="go">
-        </form>
+        <p>Yet another self-hosted URL shortener.</p>
+        <div>
+            <b>URL:</b>
+            <input type="text" placeholder="{{ .domain }}" id="url" title="">
+            <button id="go" title="Shorten the URL">GO</button>
+            <button id="copy" hidden="" title="Copy to clipboard" data-clipboard-target="#url">Copy</button>
+            <button id="reset" hidden="" title="Reset the URL box">Reset</button>
+        </div>
         
-        <p><a href="https://github.com/wrfly/yasuser">@yasuser</a> | wrfly</p>
     </main>
     <footer>
+        {{ .domain }} | 
+        <a href="https://github.com/wrfly/yasuser">@yasuser</a>
     </footer>
 </body>
 <script src="main.js"></script>

@@ -4,16 +4,25 @@ body {
 }
 
 * {
-    margin-top: 40px;
+    margin-top: 3%;
     text-align: center;
 }
 
-main{
+a {
+    color: #0ef258b3;
+    text-decoration: none;
+    transition: .5s ease;
+}
+
+a:hover {
+    color: white;
+    transition: .5s ease;
+}
+
+main {
     top: 20%;
 }
 
-footer{
-    position: absolute;
-    bottom: 20%;
-    width: 99%;
+footer {
+    padding-top: 50px;
 }
