@@ -38,6 +38,6 @@ tools:
 
 .PHONY: asset
 asset:
-	go-bindata-assetfs -prefix routes/index -pkg routes routes/index/...
+	go-bindata-assetfs -nometadata -prefix routes/index -pkg routes routes/index/...
 	mv bindata_assetfs.go routes/asset.go
 	gofmt -w routes/asset.go
