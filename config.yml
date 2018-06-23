@@ -7,3 +7,4 @@ shortener:
 server:
   domain: u.kfd.me
   port: 8084
+  pprof: false

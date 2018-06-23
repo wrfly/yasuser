@@ -23,6 +23,34 @@ docker run --name yasuser -dti \
 
 Or use the [docker-compose.yml](./docker-compose.yml).
 
+Configuration example (`./yasuser -e`):
+
+```yaml
+debug: false # log-level: debug
+shortener:
+  store:
+    dbpath: ./yasuser.db # bolt db path, required when dbtype is bolt
+    dbtype: bolt         # bolt or redis
+    redis: redis://localhost:6379 # redis address, required when dbtype is redis
+server:
+  domain: u.kfd.me  # server's domain name
+  port: 8084        # port to listen
+  pprof: false      # enable pprof
+                    # go tool pprof http://localhost:8084/debug/pprof/heap
+```
+
+All the configuration can be set via environment:
+
+```txt
+YASUSER_DEBUG=false
+YASUSER_SHORTENER_STORE_DBPATH=./yasuser.db
+YASUSER_SHORTENER_STORE_DBTYPE=bolt
+YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
+YASUSER_SERVER_DOMAIN=u.kfd.me
+YASUSER_SERVER_PORT=8084
+YASUSER_SERVER_PPROF=false
+```
+
 ## Usage
 
 ```bash
@@ -59,3 +87,4 @@ Or just visit the web page:
   - [ ] URL status
   - [ ] runtime metrics
 - [x] UI index
+- [x] pprof

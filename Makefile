@@ -20,7 +20,12 @@ test:
 .PHONY: dev
 dev: asset build
 	rm -f $(NAME).db
-	YASUSER_DEBUG=true ./$(NAME)
+	YASUSER_DEBUG=true YASUSER_SERVER_PPROF=true ./$(NAME)
+
+.PHONY: pprof
+pprof: asset build
+	rm -f $(NAME).db
+	YASUSER_SERVER_PPROF=true ./$(NAME)
 
 .PHONY: img
 img:

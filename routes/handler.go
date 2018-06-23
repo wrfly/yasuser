@@ -10,6 +10,7 @@ import (
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
+
 	"github.com/wrfly/yasuser/shortener"
 )
 
