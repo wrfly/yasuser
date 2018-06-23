@@ -14,7 +14,7 @@ but under **YOUR** control.
 
 ```sh
 docker run --name yasuser -dti \
-    -p 8080:8084 \
+    -p 8084:8084 \
     -e YASUSER_SHORTENER_STORE_DBPATH=/data/yasuser.db \
     -e YASUSER_SERVER_DOMAIN=your.domain.com \
     -v `pwd`:/data \
@@ -68,6 +68,10 @@ https://u.kfd.me/1C
 Or just visit the web page:
 
 ![index](index.png)
+
+## Benckmark
+
+See [benchmark.md](benchmark/readme.md)
 
 ## Features
 
