@@ -20,6 +20,7 @@ type server struct {
 	stener        shortener.Shortener
 	indexTemplate *template.Template
 	fileMap       map[string]bool
+	gaID          string
 }
 
 func (s *server) init() {
@@ -61,6 +62,7 @@ func (s *server) handleIndex() gin.HandlerFunc {
 			// visit from a web browser
 			s.indexTemplate.Execute(c.Writer, map[string]string{
 				"domain": s.scheme + "://" + s.domain,
+				"gaID":   s.gaID,
 			})
 		}
 	}

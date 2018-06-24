@@ -33,6 +33,7 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	srv := server{
 		domain: conf.Domain,
 		stener: shortener,
+		gaID:   conf.GAID,
 	}
 	srv.init()
 

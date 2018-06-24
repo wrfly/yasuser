@@ -37,6 +37,7 @@ server:
   port: 8084        # port to listen
   pprof: false      # enable pprof
                     # go tool pprof http://localhost:8084/debug/pprof/heap
+  gaid: 62244864-8  # google analytics ID
 ```
 
 All the configuration can be set via environment:
@@ -49,6 +50,7 @@ YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
 YASUSER_SERVER_DOMAIN=u.kfd.me
 YASUSER_SERVER_PORT=8084
 YASUSER_SERVER_PPROF=false
+YASUSER_SERVER_GAID=62244864-8
 ```
 
 ## Usage
@@ -71,7 +73,7 @@ Or just visit the web page:
 
 ## Benckmark
 
-See [benchmark.md](benchmark/readme.md)
+See [benchmark](benchmark/readme.md)
 
 ## Features
 
@@ -91,4 +93,6 @@ See [benchmark.md](benchmark/readme.md)
   - [ ] URL status
   - [ ] runtime metrics
 - [x] UI index
+  - [x] google analytics
+  - [ ] prettify the index
 - [x] pprof
