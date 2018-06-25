@@ -29,12 +29,16 @@ pprof: asset build
 
 .PHONY: img
 img:
-	docker build -t wrfly/$(NAME):$(VERSION) -t wrfly/$(NAME) .
+	docker build -t wrfly/$(NAME):$(VERSION) -t wrfly/$(NAME) -t wrfly/$(NAME):develop .
 
 .PHONY: push-img
 push-img:
 	docker push wrfly/$(NAME)
 	docker push wrfly/$(NAME):$(VERSION)
+
+.PHONY: push-dev-img
+push-dev-img:
+	docker push wrfly/$(NAME):develop
 
 .PHONY: tools
 tools:
