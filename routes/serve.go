@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"sync"
@@ -32,6 +33,7 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	srv := server{
 		domain: conf.Domain,
 		stener: shortener,
+		gaID:   conf.GAID,
 	}
 	srv.init()
 
@@ -39,6 +41,16 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	engine.GET("/", srv.handleIndex())
 	engine.POST("/", srv.handleLongURL())
 	engine.GET("/:URI", srv.handleURI())
+
+	// go tool pprof
+	if conf.Pprof {
+		engine.GET("/:URI/pprof/", func(c *gin.Context) {
+			pprof.Index(c.Writer, c.Request)
+		})
+		engine.GET("/:URI/pprof/:x", func(c *gin.Context) {
+			pprof.Index(c.Writer, c.Request)
+		})
+	}
 
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),

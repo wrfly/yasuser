@@ -13,6 +13,8 @@ import (
 type SrvConfig struct {
 	Domain string `default:"u.kfd.me"`
 	Port   int    `default:"8084"`
+	Pprof  bool   `default:"false"`
+	GAID   string `default:"62244864-8"`
 }
 
 type StoreConfig struct {

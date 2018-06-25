@@ -1,5 +1,5 @@
-hash: 623e20263e37afadb62bb9df129b3441901de6485b0a3a4eeb5290b262e31313
-updated: 2018-06-22T00:17:33.835892141+08:00
+hash: 63000bbf8dc227a5b2a52042978ef4a87c2c52859c2ba615f602361d5e0d522e
+updated: 2018-06-25T10:54:05.117279563+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -27,7 +27,7 @@ imports:
   - internal/singleflight
   - internal/util
 - name: github.com/golang/protobuf
-  version: 927b65914520a8b7d44f5c9057611cfec6b2e2d0
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
 - name: github.com/mattn/go-isatty
@@ -36,17 +36,18 @@ imports:
   version: 6def279d2ce6c81a79dd1c1be580f03bb216fb8a
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  repo: https://github.com/sirupsen/logrus.git
 - name: github.com/ugorji/go
   version: f3cacc17c85ecb7f1b6a9e373ee85d1480919868
   subpackages:
   - codec
 - name: golang.org/x/crypto
-  version: 1a580b3eff7814fc9b40602fd35256c63b50f491
+  version: a49355c7e3f8fe157a85be2f77e6e269a0f89602
   repo: https://github.com/golang/crypto.git
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 7c87d13f8e835d2fb3a70a2912c811ed0c1d241b
+  version: 63fc586f45fe72d95d5240a5d5eb95e6503907d3
   repo: https://github.com/golang/sys.git
   subpackages:
   - unix
