@@ -7,8 +7,6 @@ script:
   - make img
 
 after_success:
-  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
-      make push-img ;
-      docker logout;
-    fi
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - if [[ "$TRAVIS_BRANCH" == "master" ]];then make push-img; fi
+  - if [[ "$TRAVIS_BRANCH" == "develop" ]];then make push-dev-img; fi

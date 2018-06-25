@@ -36,6 +36,10 @@ push-img:
 	docker push wrfly/$(NAME)
 	docker push wrfly/$(NAME):$(VERSION)
 
+.PHONY: push-dev-img
+push-dev-img:
+	docker push wrfly/$(NAME):develop
+
 .PHONY: tools
 tools:
 	go get github.com/jteeuwen/go-bindata/...
