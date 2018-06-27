@@ -13,7 +13,7 @@ const (
 	REDIS = "redis"
 )
 
-var initLength int64 = 99
+var skipKeyNums int64 = 99
 
 // Database is a KV storage, there two relationships
 // hashSum -> short & short -> long

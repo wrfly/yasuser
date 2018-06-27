@@ -9,7 +9,7 @@ services:
       - YASUSER_DEBUG=false
       - YASUSER_SHORTENER_STORE_DBPATH=/data/yasuser.db
       - YASUSER_SHORTENER_STORE_DBTYPE=bolt
-      - YASUSER_SERVER_DOMAIN=u.kfd.me
+      - YASUSER_SERVER_DOMAIN=https://u.kfd.me
       - YASUSER_SERVER_PORT=8084
     volumes:
       - ./:/data

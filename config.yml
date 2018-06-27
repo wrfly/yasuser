@@ -5,5 +5,7 @@ shortener:
     dbtype: bolt
     redis: redis://localhost:6379
 server:
-  domain: u.kfd.me
+  domain: https://u.kfd.me
   port: 8084
+  pprof: false
+  gaid: 62244864-8

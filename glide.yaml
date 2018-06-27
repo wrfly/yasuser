@@ -6,6 +6,7 @@ import:
   version: ^1.2.0
 - package: github.com/sirupsen/logrus
   version: ^1.0.5
+  repo: https://github.com/sirupsen/logrus.git
 - package: gopkg.in/urfave/cli.v2
   version: ^2
   repo: https://github.com/urfave/cli.git
