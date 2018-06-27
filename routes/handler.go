@@ -16,7 +16,6 @@ import (
 
 type server struct {
 	domain        string
-	scheme        string
 	stener        shortener.Shortener
 	indexTemplate *template.Template
 	fileMap       map[string]bool
@@ -46,22 +45,15 @@ func (s *server) handleIndex() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		UA := c.Request.UserAgent()
-		if s.scheme == "" {
-			if c.Request.URL.Scheme == "" {
-				s.scheme = "http"
-			} else {
-				s.scheme = "https"
-			}
-		}
 
 		if matched := curlUA.MatchString(UA); matched {
 			// query from curl
-			c.String(200, fmt.Sprintf("curl %s://%s -d \"%s\"", s.scheme,
+			c.String(200, fmt.Sprintf("curl %s -d \"%s\"",
 				s.domain, "http://longlonglong.com/long/long/long?a=1&b=2"))
 		} else {
 			// visit from a web browser
 			s.indexTemplate.Execute(c.Writer, map[string]string{
-				"domain": s.scheme + "://" + s.domain,
+				"domain": s.domain,
 				"gaID":   s.gaID,
 			})
 		}
@@ -122,7 +114,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			c.String(500, "something bad happend")
 			return
 		}
-		shortURL := fmt.Sprintf("%s://%s/%s", s.scheme, s.domain, short)
+		shortURL := fmt.Sprintf("%s/%s", s.domain, short)
 		c.String(200, fmt.Sprintln(shortURL))
 	}
 }

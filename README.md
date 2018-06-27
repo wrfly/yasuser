@@ -33,9 +33,9 @@ shortener:
     dbtype: bolt         # bolt or redis
     redis: redis://localhost:6379 # redis address, required when dbtype is redis
 server:
-  domain: u.kfd.me  # server's domain name
+  domain: https://u.kfd.me
   port: 8084        # port to listen
-  pprof: false      # enable pprof
+  pprof: false      # enable|disable pprof
                     # go tool pprof http://localhost:8084/debug/pprof/heap
   gaid: 62244864-8  # google analytics ID
 ```
@@ -47,7 +47,7 @@ YASUSER_DEBUG=false
 YASUSER_SHORTENER_STORE_DBPATH=./yasuser.db
 YASUSER_SHORTENER_STORE_DBTYPE=bolt
 YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
-YASUSER_SERVER_DOMAIN=u.kfd.me
+YASUSER_SERVER_DOMAIN=https://u.kfd.me
 YASUSER_SERVER_PORT=8084
 YASUSER_SERVER_PPROF=false
 YASUSER_SERVER_GAID=62244864-8

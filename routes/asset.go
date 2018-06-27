@@ -10,10 +10,10 @@
 package routes
 
 import (
-	"github.com/elazarl/go-bindata-assetfs"
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/elazarl/go-bindata-assetfs"
 	"io"
 	"io/ioutil"
 	"os"
@@ -226,10 +226,10 @@ func AssetNames() []string {
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
 	"clipboard.min.js": clipboardMinJs,
-	"favicon.ico": faviconIco,
-	"index.html": indexHtml,
-	"main.css": mainCss,
-	"main.js": mainJs,
+	"favicon.ico":      faviconIco,
+	"index.html":       indexHtml,
+	"main.css":         mainCss,
+	"main.js":          mainJs,
 }
 
 // AssetDir returns the file names below a certain
@@ -271,12 +271,13 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"clipboard.min.js": &bintree{clipboardMinJs, map[string]*bintree{}},
-	"favicon.ico": &bintree{faviconIco, map[string]*bintree{}},
-	"index.html": &bintree{indexHtml, map[string]*bintree{}},
-	"main.css": &bintree{mainCss, map[string]*bintree{}},
-	"main.js": &bintree{mainJs, map[string]*bintree{}},
+	"favicon.ico":      &bintree{faviconIco, map[string]*bintree{}},
+	"index.html":       &bintree{indexHtml, map[string]*bintree{}},
+	"main.css":         &bintree{mainCss, map[string]*bintree{}},
+	"main.js":          &bintree{mainJs, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -325,7 +326,6 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
 
 func assetFS() *assetfs.AssetFS {
 	assetInfo := func(path string) (os.FileInfo, error) {
