@@ -30,10 +30,16 @@ func newBoltDB(path string) (*boltDB, error) {
 
 	b := &boltDB{
 		db:     db,
-		length: &initLength,
+		length: &skipKeyNums,
 	}
 	b.createBucket(longBucket)  // shortURL -> longURL
 	b.createBucket(shortBucket) // longURL's MD5 -> shortURL
+
+	b.db.View(func(tx *bolt.Tx) error {
+		bkt := tx.Bucket([]byte(shortBucket))
+		*b.length += int64(bkt.Stats().KeyN)
+		return nil
+	})
 
 	return b, nil
 }

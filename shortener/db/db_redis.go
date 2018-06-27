@@ -23,9 +23,16 @@ func newRedisDB(redisAddr string) (*redisDB, error) {
 		return nil, err
 	}
 
+	initLen, err := cli.DBSize().Result()
+	if err != nil {
+		return nil, err
+	}
+	initLen /= 2
+	initLen += skipKeyNums
+
 	return &redisDB{
 		cli:    cli,
-		length: &initLength,
+		length: &initLen,
 	}, nil
 }
 
