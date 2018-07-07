@@ -15,6 +15,7 @@ import (
 type SrvConfig struct {
 	Domain string `default:"https://u.kfd.me"`
 	Port   int    `default:"8084"`
+	Limit  int64  `default:"10"`
 	Pprof  bool   `default:"false"`
 	GAID   string `default:"62244864-8"`
 }

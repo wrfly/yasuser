@@ -35,6 +35,7 @@ shortener:
 server:
   domain: https://u.kfd.me
   port: 8084        # port to listen
+  limit: 10         # rate limit (request per second)
   pprof: false      # enable|disable pprof
                     # go tool pprof http://localhost:8084/debug/pprof/heap
   gaid: 62244864-8  # google analytics ID
@@ -49,6 +50,7 @@ YASUSER_SHORTENER_STORE_DBTYPE=bolt
 YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
 YASUSER_SERVER_DOMAIN=https://u.kfd.me
 YASUSER_SERVER_PORT=8084
+YASUSER_SERVER_LIMIT=10
 YASUSER_SERVER_PPROF=false
 YASUSER_SERVER_GAID=62244864-8
 ```
@@ -96,7 +98,7 @@ See [benchmark](benchmark/readme.md)
 - [x] redis database
 - [x] customization
 - [ ] TTL of URL
-- [ ] rate limit
+- [x] rate limit
 - [ ] management(auth)
   - [ ] remove(domain or keywords)
   - [ ] blacklist(domain or keywords)

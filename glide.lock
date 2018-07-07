@@ -1,5 +1,5 @@
-hash: 855e90b19b542985df5662df33f74bee6e6663911721df5a0ac7827d2c5e45ca
-updated: 2018-07-07T20:12:49.757125944+08:00
+hash: 99ce852ecdb046dd49270960af4b9e134dc4f02e631ea0e60636f01720a11cb0
+updated: 2018-07-07T23:48:40.92389389+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -43,6 +43,10 @@ imports:
   - codec
 - name: github.com/wrfly/ecp
   version: 8d31e5686b64103c7662354f3806f31c4c00449d
+- name: github.com/wrfly/testing-kit
+  version: add40b9fc2c1b6f15bab4817cf5e64c780291c6a
+  subpackages:
+  - util/tokenbucket
 - name: golang.org/x/crypto
   version: 1a580b3eff7814fc9b40602fd35256c63b50f491
   repo: https://github.com/golang/crypto.git

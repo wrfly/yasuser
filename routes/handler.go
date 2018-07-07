@@ -7,23 +7,40 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
+	"github.com/wrfly/testing-kit/util/tokenbucket"
 
-	"github.com/wrfly/yasuser/shortener"
+	"github.com/wrfly/yasuser/config"
+	stner "github.com/wrfly/yasuser/shortener"
 	"github.com/wrfly/yasuser/types"
 )
 
 type server struct {
 	domain string
 	gaID   string
+	limit  int64
 
-	stener        shortener.Shortener
+	stener        stner.Shortener
 	indexTemplate *template.Template
 	fileMap       map[string]bool
 
 	host string
+	tb   map[string]*tokenbucket.Bucket
+}
+
+func newServer(conf config.SrvConfig, shortener stner.Shortener) server {
+	srv := server{
+		domain: conf.Domain,
+		stener: shortener,
+		gaID:   conf.GAID,
+		limit:  conf.Limit,
+	}
+	srv.init()
+
+	return srv
 }
 
 func (s *server) init() {
@@ -47,6 +64,8 @@ func (s *server) init() {
 		panic(err)
 	}
 	s.host = u.Host
+
+	s.tb = make(map[string]*tokenbucket.Bucket, 0)
 }
 
 func (s *server) handleIndex() gin.HandlerFunc {
@@ -98,6 +117,16 @@ func (s *server) handleURI() gin.HandlerFunc {
 
 func (s *server) handleLongURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// rate limit
+		IP := c.ClientIP()
+		if tb, ok := s.tb[IP]; !ok {
+			s.tb[IP] = tokenbucket.New(s.limit, time.Second)
+		} else {
+			if !tb.TakeOne() {
+				c.String(http.StatusBadRequest, "rate exceeded\n")
+				return
+			}
+		}
 		buf := urlBufferPool.Get().([]byte)
 		defer urlBufferPool.Put(buf)
 		n, err := c.Request.Body.Read(buf)
