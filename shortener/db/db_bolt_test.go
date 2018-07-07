@@ -2,15 +2,25 @@ package db
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/wrfly/yasuser/types"
 )
 
+var tempDBPath = "/tmp/myyxxy.db"
+
+func removeTempDB() {
+	os.Remove(tempDBPath)
+}
+
 func TestBoltDB(t *testing.T) {
+	removeTempDB()
+
 	key := "5d41402abc4b2a76b9719d911017c592"
 	URL := "http://kfd.me"
-	db, err := newBoltDB("/tmp/myyxxy.db")
+	db, err := newBoltDB(tempDBPath)
 	assert.NoError(t, err)
 	defer db.Close()
 
@@ -20,29 +30,26 @@ func TestBoltDB(t *testing.T) {
 	u, err := db.GetShort(key)
 	assert.NoError(t, err)
 
-	if u != URL {
-		t.Error("!=")
-	}
-	fmt.Println(u)
+	assert.Equal(t, u, URL)
 
 	u, err = db.GetShort("nonono")
-	assert.NoError(t, err)
-	fmt.Println(u)
-
+	assert.Error(t, types.ErrNotFound)
 }
 
 func TestBoltDBLen(t *testing.T) {
-	db, err := newBoltDB("/tmp/myyxxy.db")
+	removeTempDB()
+
+	db, err := newBoltDB(tempDBPath)
 	assert.NoError(t, err)
 	defer db.Close()
 
-	err = db.SetShort("1", "URL")
-	assert.NoError(t, err)
+	skipped := skipKeyNums
+	count := 99
+	for index := 0; index < count; index++ {
+		long := fmt.Sprintf("http://u.kfd.me/index-%d", index)
+		hash := fmt.Sprintf("%d", index)
+		assert.NoError(t, db.SetShort(hash, long))
+	}
 
-	err = db.SetShort("3", "URL")
-	assert.NoError(t, err)
-
-	l, err := db.Len()
-	assert.NoError(t, err)
-	fmt.Println(l)
+	assert.Equal(t, int64(count)+skipped, db.Len())
 }

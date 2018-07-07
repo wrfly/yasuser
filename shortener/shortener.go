@@ -69,7 +69,7 @@ func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
 
 	shortURL = strings.TrimLeft(utils.CalHash(stner.db.Len()), "0")
 
-	go stner.store(shortURL, hashSum, longURL)
+	stner.store(shortURL, hashSum, longURL)
 
 	return shortURL
 }

@@ -5,20 +5,22 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/wrfly/yasuser/shortener/db"
+	"github.com/wrfly/yasuser/config"
 )
 
 func TestShorter(t *testing.T) {
-	db, err := db.NewDB("/tmp/my1x.db")
-	assert.NoError(t, err)
-	s := Shorter{
-		DB: db,
+	c := config.ShortenerConfig{
+		Store: config.StoreConfig{
+			DBPath: "/tmp/test.yasuser.bolt.db",
+			DBType: "bolt",
+		},
 	}
+	s := New(c)
 
-	for i := 0; i < 64; i++ {
-		u := fmt.Sprintf("%v", i)
-		short := s.Short(u)
-		long := s.Long(short)
-		assert.Equal(t, u, long)
+	for i := 0; i < 10; i++ {
+		URL := fmt.Sprintf("http://%v", i)
+		short := s.Shorten(URL)
+		long := s.Restore(short)
+		assert.Equal(t, URL, long)
 	}
 }
