@@ -49,6 +49,7 @@ func TestBoltDBLen(t *testing.T) {
 		long := fmt.Sprintf("http://u.kfd.me/index-%d", index)
 		hash := fmt.Sprintf("%d", index)
 		assert.NoError(t, db.SetShort(hash, long))
+		db.Len()
 	}
 
 	assert.Equal(t, int64(count)+skipped, db.Len())

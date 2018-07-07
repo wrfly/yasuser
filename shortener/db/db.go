@@ -15,11 +15,13 @@ const (
 
 var skipKeyNums int64 = 99
 
-// Database is a KV storage, there two relationships
+// Database is a KV storage, there are two relationships
 // hashSum -> short & short -> long
 // hashSum is the URL's hashSum
 type Database interface {
 	Close() error
+	// Len returns the currerent length of keys, and +1
+	// use atomic for concurrency conflict handling
 	Len() int64
 	SetShort(hashSum, shortURL string) error
 	GetShort(hashSum string) (short string, err error)

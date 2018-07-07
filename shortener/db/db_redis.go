@@ -41,14 +41,13 @@ func (r *redisDB) Close() error {
 }
 
 func (r *redisDB) Len() int64 {
-	return atomic.LoadInt64(r.length)
+	return atomic.AddInt64(r.length, 1) - 1
 }
 
 func (r *redisDB) SetShort(md5sum, shortURL string) error {
 	if err := r.set(md5sum, shortURL); err != nil {
 		return err
 	}
-	atomic.AddInt64(r.length, 1)
 	return nil
 }
 

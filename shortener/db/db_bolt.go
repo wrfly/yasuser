@@ -50,11 +50,7 @@ func (b *boltDB) Close() error {
 }
 
 func (b *boltDB) SetShort(md5sum, shortURL string) error {
-	err := b.set(shortBucket, md5sum, shortURL)
-	if err == nil {
-		atomic.AddInt64(b.length, 1)
-	}
-	return err
+	return b.set(shortBucket, md5sum, shortURL)
 }
 
 func (b *boltDB) GetShort(md5sum string) (string, error) {
@@ -72,7 +68,7 @@ func (b *boltDB) createBucket(bucketName string) error {
 }
 
 func (b *boltDB) Len() int64 {
-	return atomic.LoadInt64(b.length)
+	return atomic.AddInt64(b.length, 1) - 1
 }
 
 func (b *boltDB) SetLong(shortURL, longURL string) error {
