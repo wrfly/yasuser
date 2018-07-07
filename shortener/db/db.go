@@ -20,12 +20,9 @@ var skipKeyNums int64 = 99
 // hashSum is the URL's hashSum
 type Database interface {
 	Close() error
-	// Len returns the currerent length of keys, and +1
-	// use atomic for concurrency conflict handling
 	Len() int64
-	SetShort(hashSum, shortURL string) error
+	Store(hashSum, shortURL, longURL string) error
 	GetShort(hashSum string) (short string, err error)
-	SetLong(shortURL, longURL string) error
 	GetLong(shortURL string) (long string, err error)
 }
 

@@ -102,12 +102,9 @@ func (stner db_Shortener) Restore(shortURL string) string {
 }
 
 func (stner db_Shortener) store(shortURL, hashSum, longURL string) {
-	if err := stner.db.SetLong(shortURL, longURL); err != nil {
-		logrus.Errorf("set long error: %s", err)
-	}
-
-	if err := stner.db.SetShort(hashSum, shortURL); err != nil {
-		logrus.Errorf("set shortURL error: %s", err)
+	err := stner.db.Store(hashSum, shortURL, longURL)
+	if err != nil {
+		logrus.Error(err)
 	}
 }
 

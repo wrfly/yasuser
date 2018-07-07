@@ -49,12 +49,22 @@ func (b *boltDB) Close() error {
 	return nil
 }
 
-func (b *boltDB) SetShort(md5sum, shortURL string) error {
-	return b.set(shortBucket, md5sum, shortURL)
+func (b *boltDB) Store(hashSum, shortURL, longURL string) error {
+	logrus.Debugf("store [%s]: '%s'='%s'", hashSum, shortURL, longURL)
+	return b.db.Update(func(tx *bolt.Tx) error {
+		err := tx.Bucket([]byte(shortBucket)).
+			Put([]byte(hashSum), []byte(shortURL))
+		if err != nil {
+			return err
+		}
+		err = tx.Bucket([]byte(longBucket)).
+			Put([]byte(shortURL), []byte(longURL))
+		return err
+	})
 }
 
-func (b *boltDB) GetShort(md5sum string) (string, error) {
-	return b.get(shortBucket, md5sum)
+func (b *boltDB) GetShort(hashSum string) (string, error) {
+	return b.get(shortBucket, hashSum)
 }
 
 func (b *boltDB) createBucket(bucketName string) error {
@@ -67,25 +77,14 @@ func (b *boltDB) createBucket(bucketName string) error {
 	})
 }
 
+// Len returns the currerent length of keys, and +1
+// use atomic for concurrency conflict handling
 func (b *boltDB) Len() int64 {
 	return atomic.AddInt64(b.length, 1) - 1
 }
 
-func (b *boltDB) SetLong(shortURL, longURL string) error {
-	return b.set(longBucket, shortURL, longURL)
-}
-
 func (b *boltDB) GetLong(shortURL string) (string, error) {
 	return b.get(longBucket, shortURL)
-}
-
-func (b *boltDB) set(bkName, key, value string) error {
-	logrus.Debugf("bolt set [%s]: '%s'='%s'", bkName, key, value)
-	return b.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(bkName))
-		err := b.Put([]byte(key), []byte(value))
-		return err
-	})
 }
 
 func (b *boltDB) get(bkName, key string) (value string, err error) {
