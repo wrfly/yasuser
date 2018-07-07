@@ -59,8 +59,8 @@ func (r *redisDB) SetLong(shortURL, longURL string) error {
 	return r.set(shortURL, longURL)
 }
 
-func (r *redisDB) GetLong(md5sum string) (long string, err error) {
-	return r.get(md5sum)
+func (r *redisDB) GetLong(shortURL string) (long string, err error) {
+	return r.get(shortURL)
 }
 
 func (r *redisDB) set(key, value string) error {

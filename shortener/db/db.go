@@ -26,7 +26,7 @@ type Database interface {
 	SetShort(hashSum, shortURL string) error
 	GetShort(hashSum string) (short string, err error)
 	SetLong(shortURL, longURL string) error
-	GetLong(hashSum string) (long string, err error)
+	GetLong(shortURL string) (long string, err error)
 }
 
 // New DB storage

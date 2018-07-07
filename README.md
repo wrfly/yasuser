@@ -62,8 +62,20 @@ https://u.kfd.me/1C
 ➜  ~
 
 # restore it
-➜  ~ curl http://u.kfd.me/1C
+➜  ~ curl https://u.kfd.me/1C
 <a href="https://kfd.me">Found</a>.
+
+# customize the short URL
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/hello" -H "custom: kfd"  
+https://u.kfd.me/kfd
+
+# conflict
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/world" -H "custom: kfd"
+custom URL already exist
+
+# restore the customized URL
+➜  ~ curl localhost:8084/kfd
+<a href="https://kfd.me/hello">Found</a>.
 
 ```
 
@@ -82,7 +94,7 @@ See [benchmark](benchmark/readme.md)
 - [x] length and validate
 - [x] memory cache
 - [x] redis database
-- [ ] customization
+- [x] customization
 - [ ] TTL of URL
 - [ ] rate limit
 - [ ] management(auth)

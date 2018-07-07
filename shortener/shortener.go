@@ -1,6 +1,7 @@
 package shortener
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -16,6 +17,8 @@ type Shortener interface {
 	Shorten(longURL string) (shortURL string)
 	// Restore a short URL
 	Restore(shortURL string) (longURL string)
+	// Shorten the URL with a custom short URL
+	ShortenWithCustomURL(customURL, longURL string) error
 }
 
 type db_Shortener struct {
@@ -47,16 +50,18 @@ func (stner db_Shortener) Shorten(longURL string) string {
 
 	// then the db
 	shortURL := stner.getShortFromHash(hashSum, longURL)
-	if shortURL != "" {
-		stner.cacher.Set(hashSum, shortURL)
+	if shortURL == "" {
+		return "" // error
 	}
+	stner.cacher.Set(hashSum, shortURL)
 	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]", longURL, shortURL)
 
 	return shortURL
 }
 
+// getShortFromHash return the shortURL from db if found
+// otherwise create a new one
 func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
-	// return from db if found, otherwise create a new one
 	shortURL, err := stner.db.GetShort(hashSum)
 	if err == nil {
 		return shortURL
@@ -96,7 +101,6 @@ func (stner db_Shortener) Restore(shortURL string) string {
 	return longURL
 }
 
-// Restore a short URL
 func (stner db_Shortener) store(shortURL, hashSum, longURL string) {
 	if err := stner.db.SetLong(shortURL, longURL); err != nil {
 		logrus.Errorf("set long error: %s", err)
@@ -105,4 +109,38 @@ func (stner db_Shortener) store(shortURL, hashSum, longURL string) {
 	if err := stner.db.SetShort(hashSum, shortURL); err != nil {
 		logrus.Errorf("set shortURL error: %s", err)
 	}
+}
+
+// Shorten a long URL with a custom key
+func (stner db_Shortener) ShortenWithCustomURL(customURL, longURL string) error {
+	// xxhash is faster than md5sum
+	hashSum := utils.XXHash(longURL)
+
+	// check if the longURL exist and compare its shortenURL with customURL
+	if shortURL, err := stner.cacher.Get(hashSum); err == nil {
+		if shortURL == customURL {
+			return nil
+		}
+	}
+	// cache has this key but the custom url not equal the shorten one
+	// check the key (customURL) already exist
+	if _, err := stner.cacher.Get(customURL); err == nil {
+		return types.ErrAlreadyExist
+	}
+	if _, err := stner.db.GetLong(customURL); err == nil {
+		return types.ErrAlreadyExist
+	}
+
+	existShortURL := stner.getShortFromHash(hashSum, longURL)
+	if existShortURL == "" {
+		return fmt.Errorf("error") // error
+	}
+
+	// reset the custom URL
+	stner.store(customURL, hashSum, longURL)
+	stner.cacher.Set(hashSum, customURL)
+
+	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]", longURL, customURL)
+
+	return nil
 }
