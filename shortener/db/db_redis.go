@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/wrfly/yasuser/types"
 )
@@ -69,4 +71,8 @@ func (r *redisDB) get(key string) (value string, err error) {
 		return "", err
 	}
 	return stringCmd.String(), nil
+}
+
+func (r *redisDB) StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error {
+	return nil
 }

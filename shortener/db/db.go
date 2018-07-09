@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -22,6 +23,7 @@ type Database interface {
 	Close() error
 	Len() int64
 	Store(hashSum, shortURL, longURL string) error
+	StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error
 	GetShort(hashSum string) (short string, err error)
 	GetLong(shortURL string) (long string, err error)
 }

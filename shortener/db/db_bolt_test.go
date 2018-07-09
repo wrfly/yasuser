@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wrfly/yasuser/types"
@@ -57,4 +58,23 @@ func TestBoltDBLen(t *testing.T) {
 	}
 
 	assert.Equal(t, int64(count)+skipped, db.Len())
+}
+
+func TestBoltDBStoreWithTTL(t *testing.T) {
+	removeTempDB()
+
+	hashSum := "5d41402abc4b2a76b9719d911017c592"
+	URL := "http://kfd.me"
+	shortURL := "_1B"
+	db, err := newBoltDB(tempDBPath)
+	assert.NoError(t, err)
+	defer db.Close()
+
+	err = db.StoreWithTTL(hashSum, shortURL, URL, time.Second)
+	assert.NoError(t, err)
+
+	time.Sleep(time.Second * 2)
+
+	_, err = db.GetLong(shortURL)
+	assert.EqualError(t, err, "not found")
 }

@@ -97,7 +97,7 @@ See [benchmark](benchmark/readme.md)
 - [x] memory cache
 - [x] redis database
 - [x] customization
-- [ ] TTL of URL
+- [x] TTL of URL
 - [x] rate limit
 - [ ] management(auth)
   - [ ] remove(domain or keywords)
