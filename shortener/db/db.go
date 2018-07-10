@@ -22,9 +22,9 @@ var skipKeyNums int64 = 99
 type Database interface {
 	Close() error
 	Len() int64
-	Store(URL types.URL) error
-	GetShort(hashSum string) (URL types.URL, err error)
-	GetLong(shortURL string) (URL types.URL, err error)
+	Store(URL *types.URL) error
+	GetShort(hashSum string) (URL *types.URL, err error)
+	GetLong(short string) (URL *types.URL, err error)
 }
 
 // New DB storage

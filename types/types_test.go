@@ -8,10 +8,11 @@ import (
 )
 
 func TestURL(t *testing.T) {
+	n := time.Now()
 	u := &URL{
 		Ori:    "https://kfd.me",
 		Short:  "1B",
-		Expire: time.Now(),
+		Expire: &n,
 		Passwd: "pass",
 	}
 
@@ -27,11 +28,12 @@ func TestURL(t *testing.T) {
 }
 
 func BenchmarkURL(b *testing.B) {
+	n := time.Now()
 	for i := 0; i < b.N; i++ {
 		u := &URL{
 			Ori:    "https://kfd.me",
 			Short:  "1B",
-			Expire: time.Now(),
+			Expire: &n,
 			Passwd: "pass",
 		}
 

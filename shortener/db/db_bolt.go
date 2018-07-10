@@ -59,7 +59,7 @@ func (b *boltDB) Close() error {
 	return nil
 }
 
-func (b *boltDB) Store(URL types.URL) error {
+func (b *boltDB) Store(URL *types.URL) error {
 	logrus.Debugf("store %v", URL)
 
 	return b.db.Update(func(tx *bolt.Tx) error {
@@ -74,11 +74,21 @@ func (b *boltDB) Store(URL types.URL) error {
 			tx.Rollback()
 			return err
 		}
+		if URL.Custom == "" {
+			return nil
+		}
+		// store custom
+		err = tx.Bucket([]byte(longBucket)).
+			Put([]byte(URL.Custom), URL.Bytes())
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 		return nil
 	})
 }
 
-func (b *boltDB) GetShort(hashSum string) (types.URL, error) {
+func (b *boltDB) GetShort(hashSum string) (*types.URL, error) {
 	return b.get(shortBucket, hashSum)
 }
 
@@ -88,12 +98,12 @@ func (b *boltDB) Len() int64 {
 	return atomic.AddInt64(b.length, 1) - 1
 }
 
-func (b *boltDB) GetLong(shortURL string) (types.URL, error) {
+func (b *boltDB) GetLong(shortURL string) (*types.URL, error) {
 	return b.get(longBucket, shortURL)
 }
 
-func (b *boltDB) get(bkName, key string) (types.URL, error) {
-	u := types.URL{}
+func (b *boltDB) get(bkName, key string) (*types.URL, error) {
+	u := new(types.URL)
 	err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bkName))
 		v := b.Get([]byte(key))
@@ -103,7 +113,7 @@ func (b *boltDB) get(bkName, key string) (types.URL, error) {
 		u.Decode(v)
 		return nil
 	})
-	logrus.Debugf("bolt get [%s]: %v", bkName, u)
+	logrus.Debugf("bolt get [%s]: %s=%v", bkName, key, u)
 
 	return u, err
 }

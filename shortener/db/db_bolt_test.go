@@ -18,7 +18,7 @@ func removeTempDB() {
 func TestBoltDB(t *testing.T) {
 	removeTempDB()
 
-	u := types.URL{
+	u := &types.URL{
 		Short: "_1B",
 		Ori:   "http://kfd.me",
 		Hash:  "5d41402abc4b2a76b9719d911017c592",
@@ -34,9 +34,9 @@ func TestBoltDB(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uShort, u)
 
-	lShort, err := db.GetLong(u.Short)
+	uLong, err := db.GetLong(u.Short)
 	assert.NoError(t, err)
-	assert.Equal(t, lShort, u)
+	assert.Equal(t, uLong, u)
 
 	_, err = db.GetShort("nonono")
 	assert.Error(t, types.ErrNotFound)
@@ -55,7 +55,7 @@ func TestBoltDBLen(t *testing.T) {
 	skipped := skipKeyNums
 	count := 99
 	for index := 0; index < count; index++ {
-		u := types.URL{
+		u := &types.URL{
 			Short: fmt.Sprintf("%d", index),
 			Ori:   fmt.Sprintf("http://u.kfd.me/index-%d", index),
 			Hash:  fmt.Sprintf("%d", index),

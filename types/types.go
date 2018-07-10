@@ -6,12 +6,19 @@ import (
 	"time"
 )
 
+type ShortOptions struct {
+	Passwd string
+	Custom string
+	TTL    time.Duration
+}
+
 type URL struct {
 	Ori    string
 	Passwd string
 	Short  string
+	Custom string
 	Hash   string
-	Expire time.Time
+	Expire *time.Time
 }
 
 func (u *URL) Bytes() []byte {
@@ -32,4 +39,14 @@ func (u *URL) HashSum() []byte {
 
 func (u *URL) ShortURL() []byte {
 	return []byte(u.Short)
+}
+
+func (u *URL) Expired() bool {
+	if u.Expire == nil {
+		return false
+	}
+	if u.Expire.Sub(time.Now()).Nanoseconds() > 0 {
+		return false
+	}
+	return true
 }

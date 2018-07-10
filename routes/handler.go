@@ -106,10 +106,10 @@ func (s *server) handleURI() gin.HandlerFunc {
 
 		default:
 			// handle shortURL
-			if realURL := s.stener.Restore(URI); realURL == "" {
-				c.String(http.StatusNotFound, fmt.Sprintln("not found"))
+			if shortURL, err := s.stener.Restore(URI); err != nil {
+				c.String(http.StatusNotFound, fmt.Sprintln(err.Error()))
 			} else {
-				c.Redirect(http.StatusPermanentRedirect, realURL)
+				c.Redirect(http.StatusPermanentRedirect, shortURL.Ori)
 			}
 		}
 	}
@@ -146,40 +146,33 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			return
 		}
 
-		var (
-			short    string
-			duration time.Duration = -1
-		)
-		customURL := c.Request.Header.Get("CUSTOM")
-		if ttl := c.Request.Header.Get("TTL"); ttl != "" {
-			duration, err = time.ParseDuration(ttl)
-			if err != nil {
-				c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
-				return
-			}
-		}
-		if customURL != "" {
-			// custom shorten URL
-			if err := s.stener.ShortenWithCustomURL(customURL, longURL, duration); err != nil {
-				if err == types.ErrAlreadyExist {
-					c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
-				} else {
-					c.String(http.StatusInternalServerError,
-						"something bad happend\n")
-				}
-				return
-			}
-			short = customURL
-		} else { // default
-			if short = s.stener.Shorten(longURL, duration); short == "" {
-				c.String(http.StatusInternalServerError,
-					"something bad happend\n")
-				return
-			}
+		shortURL, err := s.stener.Shorten(longURL, generateOptions(c.Request.Header))
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
+			return
 		}
 
-		shortURL := fmt.Sprintf("%s/%s", s.domain, short)
-		c.String(200, fmt.Sprintln(shortURL))
+		short := shortURL.Short
+		if shortURL.Custom != "" {
+			short = shortURL.Custom
+		}
+
+		c.String(200, fmt.Sprintf("%s/%s", s.domain, short))
+	}
+}
+
+func generateOptions(h http.Header) *types.ShortOptions {
+	var duration time.Duration = -1
+	customURL := h.Get("CUSTOM")
+	passWord := h.Get("PASS")
+	ttl := h.Get("TTL")
+	if ttl != "" {
+		duration, _ = time.ParseDuration(ttl)
+	}
+	return &types.ShortOptions{
+		Custom: customURL,
+		TTL:    duration,
+		Passwd: passWord,
 	}
 }
 
