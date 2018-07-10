@@ -3,6 +3,7 @@ package shortener
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/wrfly/yasuser/config"
@@ -14,11 +15,11 @@ import (
 
 type Shortener interface {
 	// Shorten a long URL
-	Shorten(longURL string) (shortURL string)
+	Shorten(longURL string, ttl time.Duration) (shortURL string)
 	// Restore a short URL
 	Restore(shortURL string) (longURL string)
 	// Shorten the URL with a custom short URL
-	ShortenWithCustomURL(customURL, longURL string) error
+	ShortenWithCustomURL(customURL, longURL string, ttl time.Duration) error
 }
 
 type db_Shortener struct {
@@ -39,29 +40,31 @@ func New(conf config.ShortenerConfig) Shortener {
 }
 
 // Shorten a long URL
-func (stner db_Shortener) Shorten(longURL string) string {
+func (stner db_Shortener) Shorten(longURL string, ttl time.Duration) string {
 	// xxhash is faster than md5sum
 	hashSum := utils.XXHash(longURL)
 
 	// cache first
-	if shortURL, err := stner.cacher.Get(hashSum); err == nil {
-		return shortURL
+	if ttl < 0 {
+		if shortURL, err := stner.cacher.Get(hashSum); err == nil {
+			return shortURL
+		}
 	}
 
 	// then the db
-	shortURL := stner.getShortFromHash(hashSum, longURL)
+	shortURL := stner.getShortFromHash(hashSum, longURL, ttl)
 	if shortURL == "" {
 		return "" // error
 	}
-	stner.cacher.Set(hashSum, shortURL)
-	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]", longURL, shortURL)
+	stner.cacher.SetWithExpire(hashSum, shortURL, int(ttl.Seconds()))
+	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]; ttl: %s", longURL, shortURL, ttl)
 
 	return shortURL
 }
 
 // getShortFromHash return the shortURL from db if found
 // otherwise create a new one
-func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
+func (stner db_Shortener) getShortFromHash(hashSum, longURL string, ttl time.Duration) string {
 	shortURL, err := stner.db.GetShort(hashSum)
 	if err == nil {
 		return shortURL
@@ -73,9 +76,7 @@ func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
 	logrus.Debugf("url %s not found, create a new one", longURL)
 
 	shortURL = strings.TrimLeft(utils.CalHash(stner.db.Len()), "0")
-
-	stner.store(shortURL, hashSum, longURL)
-
+	stner.db.StoreWithTTL(hashSum, shortURL, longURL, ttl)
 	return shortURL
 }
 
@@ -83,6 +84,7 @@ func (stner db_Shortener) getShortFromHash(hashSum, longURL string) string {
 func (stner db_Shortener) Restore(shortURL string) string {
 	// cache first
 	if longURL, err := stner.cacher.Get(shortURL); err == nil {
+		logrus.Debugf("cache get %s=%s", shortURL, longURL)
 		return longURL
 	}
 
@@ -94,22 +96,16 @@ func (stner db_Shortener) Restore(shortURL string) string {
 		return ""
 	}
 
-	if err := stner.cacher.Set(shortURL, longURL); err != nil {
-		logrus.Errorf("cache shortURL error: %s", err)
-	}
+	// if err := stner.cacher.Set(shortURL, longURL); err != nil {
+	// 	logrus.Errorf("cache shortURL error: %s", err)
+	// }
 
+	logrus.Debugf("db get %s=%s", shortURL, longURL)
 	return longURL
 }
 
-func (stner db_Shortener) store(shortURL, hashSum, longURL string) {
-	err := stner.db.Store(hashSum, shortURL, longURL)
-	if err != nil {
-		logrus.Error(err)
-	}
-}
-
 // Shorten a long URL with a custom key
-func (stner db_Shortener) ShortenWithCustomURL(customURL, longURL string) error {
+func (stner db_Shortener) ShortenWithCustomURL(customURL, longURL string, ttl time.Duration) error {
 	// xxhash is faster than md5sum
 	hashSum := utils.XXHash(longURL)
 
@@ -128,14 +124,15 @@ func (stner db_Shortener) ShortenWithCustomURL(customURL, longURL string) error 
 		return types.ErrAlreadyExist
 	}
 
-	existShortURL := stner.getShortFromHash(hashSum, longURL)
+	existShortURL := stner.getShortFromHash(hashSum, longURL, ttl)
 	if existShortURL == "" {
 		return fmt.Errorf("error") // error
 	}
 
 	// reset the custom URL
-	stner.store(customURL, hashSum, longURL)
-	stner.cacher.Set(hashSum, customURL)
+	stner.db.StoreWithTTL(hashSum, customURL, longURL, ttl)
+	stner.cacher.SetWithExpire(hashSum, customURL, int(ttl.Seconds()))
+	stner.cacher.SetWithExpire(customURL, longURL, int(ttl.Seconds()))
 
 	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]", longURL, customURL)
 

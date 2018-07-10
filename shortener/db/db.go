@@ -2,11 +2,11 @@ package db
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/types"
 )
 
 const (
@@ -22,10 +22,9 @@ var skipKeyNums int64 = 99
 type Database interface {
 	Close() error
 	Len() int64
-	Store(hashSum, shortURL, longURL string) error
-	StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error
-	GetShort(hashSum string) (short string, err error)
-	GetLong(shortURL string) (long string, err error)
+	Store(URL types.URL) error
+	GetShort(hashSum string) (URL types.URL, err error)
+	GetLong(shortURL string) (URL types.URL, err error)
 }
 
 // New DB storage
@@ -35,7 +34,7 @@ func New(conf config.StoreConfig) (Database, error) {
 	case BOLT:
 		return newBoltDB(conf.DBPath)
 	case REDIS:
-		return newRedisDB(conf.Redis)
+		// return newRedisDB(conf.Redis)
 	}
 	return nil, fmt.Errorf("Unknown DB Type: %s", conf.DBType)
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wrfly/yasuser/types"
@@ -19,25 +18,30 @@ func removeTempDB() {
 func TestBoltDB(t *testing.T) {
 	removeTempDB()
 
-	hashSum := "5d41402abc4b2a76b9719d911017c592"
-	URL := "http://kfd.me"
-	shortURL := "1B"
+	u := types.URL{
+		Short: "_1B",
+		Ori:   "http://kfd.me",
+		Hash:  "5d41402abc4b2a76b9719d911017c592",
+	}
+
 	db, err := newBoltDB(tempDBPath)
 	assert.NoError(t, err)
 	defer db.Close()
 
-	err = db.Store(hashSum, shortURL, URL)
-	assert.NoError(t, err)
+	assert.NoError(t, db.Store(u))
 
-	uShort, err := db.GetShort(hashSum)
+	uShort, err := db.GetShort(u.Hash)
 	assert.NoError(t, err)
-	assert.Equal(t, uShort, shortURL)
+	assert.Equal(t, uShort, u)
 
-	lShort, err := db.GetLong(shortURL)
+	lShort, err := db.GetLong(u.Short)
 	assert.NoError(t, err)
-	assert.Equal(t, lShort, URL)
+	assert.Equal(t, lShort, u)
 
 	_, err = db.GetShort("nonono")
+	assert.Error(t, types.ErrNotFound)
+
+	_, err = db.GetLong("nonono")
 	assert.Error(t, types.ErrNotFound)
 }
 
@@ -51,30 +55,14 @@ func TestBoltDBLen(t *testing.T) {
 	skipped := skipKeyNums
 	count := 99
 	for index := 0; index < count; index++ {
-		long := fmt.Sprintf("http://u.kfd.me/index-%d", index)
-		hash := fmt.Sprintf("%d", index)
-		assert.NoError(t, db.Store(hash, hash, long))
+		u := types.URL{
+			Short: fmt.Sprintf("%d", index),
+			Ori:   fmt.Sprintf("http://u.kfd.me/index-%d", index),
+			Hash:  fmt.Sprintf("%d", index),
+		}
+		assert.NoError(t, db.Store(u))
 		db.Len()
 	}
 
 	assert.Equal(t, int64(count)+skipped, db.Len())
-}
-
-func TestBoltDBStoreWithTTL(t *testing.T) {
-	removeTempDB()
-
-	hashSum := "5d41402abc4b2a76b9719d911017c592"
-	URL := "http://kfd.me"
-	shortURL := "_1B"
-	db, err := newBoltDB(tempDBPath)
-	assert.NoError(t, err)
-	defer db.Close()
-
-	err = db.StoreWithTTL(hashSum, shortURL, URL, time.Second)
-	assert.NoError(t, err)
-
-	time.Sleep(time.Second * 2)
-
-	_, err = db.GetLong(shortURL)
-	assert.EqualError(t, err, "not found")
 }

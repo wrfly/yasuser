@@ -74,5 +74,9 @@ func (r *redisDB) get(key string) (value string, err error) {
 }
 
 func (r *redisDB) StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error {
-	return nil
+	if err := r.cli.Set(hashSum, shortURL, ttl).Err(); err != nil {
+		return err
+	}
+	// TODO: what if set failed, need to rollback?
+	return r.cli.Set(shortURL, longURL, ttl).Err()
 }

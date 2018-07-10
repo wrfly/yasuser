@@ -2,10 +2,7 @@ package db
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"sync/atomic"
-	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
@@ -13,9 +10,8 @@ import (
 )
 
 const (
-	shortBucket  = "s"
-	longBucket   = "l"
-	expireBucket = "e"
+	shortBucket = "s"
+	longBucket  = "l"
 )
 
 type boltDB struct {
@@ -36,9 +32,8 @@ func newBoltDB(path string) (*boltDB, error) {
 		db:     db,
 		length: &skipKeyNums,
 	}
-	b.createBucket(longBucket)   // shortURL -> longURL
-	b.createBucket(shortBucket)  // longURL's MD5 -> shortURL
-	b.createBucket(expireBucket) // shortURL -> TeL
+	b.createBucket(longBucket)  // short -> URL
+	b.createBucket(shortBucket) // Hash  -> URL
 
 	b.db.View(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket([]byte(shortBucket))
@@ -47,19 +42,6 @@ func newBoltDB(path string) (*boltDB, error) {
 	})
 
 	return b, nil
-}
-
-func (b *boltDB) Close() error {
-	b.db.Close()
-	return nil
-}
-
-func (b *boltDB) Store(hashSum, shortURL, longURL string) error {
-	return b.StoreWithTTL(hashSum, shortURL, longURL, -1)
-}
-
-func (b *boltDB) GetShort(hashSum string) (string, error) {
-	return b.get(shortBucket, hashSum)
 }
 
 func (b *boltDB) createBucket(bucketName string) error {
@@ -72,73 +54,56 @@ func (b *boltDB) createBucket(bucketName string) error {
 	})
 }
 
+func (b *boltDB) Close() error {
+	b.db.Close()
+	return nil
+}
+
+func (b *boltDB) Store(URL types.URL) error {
+	logrus.Debugf("store %v", URL)
+
+	return b.db.Update(func(tx *bolt.Tx) error {
+		err := tx.Bucket([]byte(shortBucket)).
+			Put(URL.HashSum(), URL.Bytes())
+		if err != nil {
+			return err
+		}
+		err = tx.Bucket([]byte(longBucket)).
+			Put(URL.ShortURL(), URL.Bytes())
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		return nil
+	})
+}
+
+func (b *boltDB) GetShort(hashSum string) (types.URL, error) {
+	return b.get(shortBucket, hashSum)
+}
+
 // Len returns the currerent length of keys, and +1
 // use atomic for concurrency conflict handling
 func (b *boltDB) Len() int64 {
 	return atomic.AddInt64(b.length, 1) - 1
 }
 
-func (b *boltDB) GetLong(shortURL string) (string, error) {
-	// check whether it's has ttl
-	if strings.HasPrefix(shortURL, "_") {
-		if expire, err := b.get(expireBucket, shortURL); err == nil {
-			// err == nil -> got the expire data
-			expireInt, _ := strconv.Atoi(expire)
-			if time.Now().Unix()-int64(expireInt) > 0 {
-				// expired
-				return "", types.ErrNotFound
-			}
-		}
-	}
+func (b *boltDB) GetLong(shortURL string) (types.URL, error) {
 	return b.get(longBucket, shortURL)
 }
 
-func (b *boltDB) get(bkName, key string) (value string, err error) {
-	err = b.db.View(func(tx *bolt.Tx) error {
+func (b *boltDB) get(bkName, key string) (types.URL, error) {
+	u := types.URL{}
+	err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bkName))
 		v := b.Get([]byte(key))
-		value = string(v)
-		if value == "" {
+		if len(v) == 0 {
 			return types.ErrNotFound
 		}
+		u.Decode(v)
 		return nil
 	})
-	logrus.Debugf("bolt get [%s]: '%s'='%s'", bkName, key, value)
+	logrus.Debugf("bolt get [%s]: %v", bkName, u)
 
-	return
-}
-
-func (b *boltDB) StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error {
-	storageInfo := fmt.Sprintf("store [%s]: '%s'='%s'", hashSum, shortURL, longURL)
-	if ttl > 0 {
-		storageInfo = fmt.Sprintf("%s; ttl: %s",
-			storageInfo, ttl.String())
-	}
-	logrus.Debugf(storageInfo)
-
-	return b.db.Update(func(tx *bolt.Tx) error {
-		err := tx.Bucket([]byte(shortBucket)).
-			Put([]byte(hashSum), []byte(shortURL))
-		if err != nil {
-			return err
-		}
-		err = tx.Bucket([]byte(longBucket)).
-			Put([]byte(shortURL), []byte(longURL))
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-		if ttl > 0 {
-			ttlInt := time.Now().Add(ttl).Unix()
-			ttlStr := strconv.FormatInt(ttlInt, 10)
-
-			err = tx.Bucket([]byte(expireBucket)).
-				Put([]byte(shortURL), []byte(ttlStr))
-			if err != nil {
-				tx.Rollback()
-				return err
-			}
-		}
-		return nil
-	})
+	return u, err
 }

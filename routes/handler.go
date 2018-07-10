@@ -107,9 +107,9 @@ func (s *server) handleURI() gin.HandlerFunc {
 		default:
 			// handle shortURL
 			if realURL := s.stener.Restore(URI); realURL == "" {
-				c.String(404, fmt.Sprintln("not found"))
+				c.String(http.StatusNotFound, fmt.Sprintln("not found"))
 			} else {
-				c.Redirect(302, realURL)
+				c.Redirect(http.StatusPermanentRedirect, realURL)
 			}
 		}
 	}
@@ -127,6 +127,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 				return
 			}
 		}
+
 		buf := urlBufferPool.Get().([]byte)
 		defer urlBufferPool.Put(buf)
 		n, err := c.Request.Body.Read(buf)
@@ -145,10 +146,21 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			return
 		}
 
-		var short string
-		if customURL := c.Request.Header.Get("CUSTOM"); customURL != "" {
+		var (
+			short    string
+			duration time.Duration = -1
+		)
+		customURL := c.Request.Header.Get("CUSTOM")
+		if ttl := c.Request.Header.Get("TTL"); ttl != "" {
+			duration, err = time.ParseDuration(ttl)
+			if err != nil {
+				c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
+				return
+			}
+		}
+		if customURL != "" {
 			// custom shorten URL
-			if err := s.stener.ShortenWithCustomURL(customURL, longURL); err != nil {
+			if err := s.stener.ShortenWithCustomURL(customURL, longURL, duration); err != nil {
 				if err == types.ErrAlreadyExist {
 					c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
 				} else {
@@ -159,14 +171,12 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			}
 			short = customURL
 		} else { // default
-			if short = s.stener.Shorten(longURL); short == "" {
+			if short = s.stener.Shorten(longURL, duration); short == "" {
 				c.String(http.StatusInternalServerError,
 					"something bad happend\n")
 				return
 			}
 		}
-
-		// TODO: shorten URL with TTL
 
 		shortURL := fmt.Sprintf("%s/%s", s.domain, short)
 		c.String(200, fmt.Sprintln(shortURL))
