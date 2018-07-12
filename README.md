@@ -16,7 +16,7 @@ but under **YOUR** control.
 docker run --name yasuser -dti \
     -p 8084:8084 \
     -e YASUSER_SHORTENER_STORE_DBPATH=/data/yasuser.db \
-    -e YASUSER_SERVER_DOMAIN=your.domain.com \
+    -e YASUSER_SERVER_DOMAIN=http://localhost:8084 \
     -v `pwd`:/data \
     wrfly/yasuser
 ```
@@ -35,6 +35,7 @@ shortener:
 server:
   domain: https://u.kfd.me
   port: 8084        # port to listen
+  limit: 10         # rate limit (request per second)
   pprof: false      # enable|disable pprof
                     # go tool pprof http://localhost:8084/debug/pprof/heap
   gaid: 62244864-8  # google analytics ID
@@ -49,6 +50,7 @@ YASUSER_SHORTENER_STORE_DBTYPE=bolt
 YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
 YASUSER_SERVER_DOMAIN=https://u.kfd.me
 YASUSER_SERVER_PORT=8084
+YASUSER_SERVER_LIMIT=10
 YASUSER_SERVER_PPROF=false
 YASUSER_SERVER_GAID=62244864-8
 ```
@@ -62,9 +64,33 @@ https://u.kfd.me/1C
 ➜  ~
 
 # restore it
-➜  ~ curl http://u.kfd.me/1C
+➜  ~ curl https://u.kfd.me/1C
 <a href="https://kfd.me">Found</a>.
 
+# customize the short URL
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/hello" -H "custom: kfd"  
+https://u.kfd.me/kfd
+
+# conflict
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/world" -H "custom: kfd"
+custom URL already exist
+
+# restore the customized URL
+➜  ~ curl https://u.kfd.me/kfd
+<a href="https://kfd.me/hello">Found</a>.
+
+# set TTL for a URL; bolt db will tell you the URL is expired while
+# the redis will just delete it
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/kfd" -H "ttl: 1s"
+https://u.kfd.me/1B
+➜  ~ sleep 1 && curl https://u.kfd.me/1B
+url expired
+
+# set TTL for a customized URL
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/kfd" -H "ttl: 1s" -H "custom: 666"
+https://u.kfd.me/666
+➜  ~ sleep 1 && curl https://u.kfd.me/666
+url expired
 ```
 
 Or just visit the web page:
@@ -82,9 +108,9 @@ See [benchmark](benchmark/readme.md)
 - [x] length and validate
 - [x] memory cache
 - [x] redis database
-- [ ] customization
-- [ ] TTL of URL
-- [ ] rate limit
+- [x] customization
+- [x] TTL of URL
+- [x] rate limit
 - [ ] management(auth)
   - [ ] remove(domain or keywords)
   - [ ] blacklist(domain or keywords)

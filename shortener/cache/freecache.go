@@ -2,8 +2,11 @@ package cache
 
 import (
 	"runtime/debug"
+	"time"
 
 	"github.com/coocood/freecache"
+	"github.com/sirupsen/logrus"
+	"github.com/wrfly/yasuser/types"
 )
 
 type Cacher struct {
@@ -16,20 +19,31 @@ func NewCacher(cacheSize int) Cacher {
 	return Cacher{cache: cache}
 }
 
-func (c Cacher) Set(key, val string) error {
-	return c.cache.Set([]byte(key), []byte(val), -1)
+func (c Cacher) Store(u *types.URL) {
+	exp := -1
+	if u.Expire != nil && !u.Expire.IsZero() {
+		exp = int(u.Expire.Sub(time.Now()).Seconds())
+		if exp <= 0 {
+			// less than 1s
+			return
+		}
+		logrus.Debugf("cache store %v with ttl %d", u, exp)
+	}
+	c.cache.Set(u.ShortURL(), u.Bytes(), exp)
+	c.cache.Set(u.HashSum(), u.Bytes(), exp)
 }
 
-func (c Cacher) SetWithExpire(key, val string, expireSeconds int) error {
-	return c.cache.Set([]byte(key), []byte(val), expireSeconds)
-}
-
-func (c Cacher) Get(key string) (string, error) {
+func (c Cacher) Get(key string) (*types.URL, error) {
 	bVal, err := c.cache.Get([]byte(key))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(bVal), nil
+	if len(bVal) == 0 {
+		return nil, types.ErrNotFound
+	}
+	u := new(types.URL)
+	u.Decode(bVal)
+	return u, nil
 }
 
 func (c Cacher) Del(key string) bool {

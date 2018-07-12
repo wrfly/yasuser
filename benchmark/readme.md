@@ -5,6 +5,14 @@ Use [wrk](https://github.com/wg/wrk) and this
 
 ## Env
 
+Version:
+
+```txt
+Version: 0.1.3	Commit: a082555	Date: 2018-06-21
+```
+
+System:
+
 ```txt
 OS:   Ubuntu 18.04
 CPU:  Intel(R) Core(TM) i7-7600U CPU @ 2.80GHz

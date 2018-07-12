@@ -1,5 +1,5 @@
-hash: 63000bbf8dc227a5b2a52042978ef4a87c2c52859c2ba615f602361d5e0d522e
-updated: 2018-06-25T10:54:05.117279563+08:00
+hash: 99ce852ecdb046dd49270960af4b9e134dc4f02e631ea0e60636f01720a11cb0
+updated: 2018-07-07T23:48:40.92389389+08:00
 imports:
 - name: github.com/boltdb/bolt
   version: 2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8
@@ -27,7 +27,7 @@ imports:
   - internal/singleflight
   - internal/util
 - name: github.com/golang/protobuf
-  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  version: 927b65914520a8b7d44f5c9057611cfec6b2e2d0
   subpackages:
   - proto
 - name: github.com/mattn/go-isatty
@@ -41,13 +41,19 @@ imports:
   version: f3cacc17c85ecb7f1b6a9e373ee85d1480919868
   subpackages:
   - codec
+- name: github.com/wrfly/ecp
+  version: 8d31e5686b64103c7662354f3806f31c4c00449d
+- name: github.com/wrfly/testing-kit
+  version: add40b9fc2c1b6f15bab4817cf5e64c780291c6a
+  subpackages:
+  - util/tokenbucket
 - name: golang.org/x/crypto
-  version: a49355c7e3f8fe157a85be2f77e6e269a0f89602
+  version: 1a580b3eff7814fc9b40602fd35256c63b50f491
   repo: https://github.com/golang/crypto.git
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 63fc586f45fe72d95d5240a5d5eb95e6503907d3
+  version: 7c87d13f8e835d2fb3a70a2912c811ed0c1d241b
   repo: https://github.com/golang/sys.git
   subpackages:
   - unix

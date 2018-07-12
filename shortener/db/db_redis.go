@@ -1,16 +1,17 @@
 package db
 
 import (
-	"sync/atomic"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/wrfly/yasuser/types"
 )
 
 type redisDB struct {
-	cli    *redis.Client
-	length *int64
+	cli *redis.Client
 }
+
+const KEY_NUMS = "KEY_NUMS"
 
 func newRedisDB(redisAddr string) (*redisDB, error) {
 	opts, err := redis.ParseURL(redisAddr)
@@ -22,17 +23,12 @@ func newRedisDB(redisAddr string) (*redisDB, error) {
 	if err := cli.Ping().Err(); err != nil {
 		return nil, err
 	}
-
-	initLen, err := cli.DBSize().Result()
-	if err != nil {
-		return nil, err
+	if cli.Get(KEY_NUMS).Err() == redis.Nil {
+		cli.Set(KEY_NUMS, skipKeyNums, -1)
 	}
-	initLen /= 2
-	initLen += skipKeyNums
 
 	return &redisDB{
-		cli:    cli,
-		length: &initLen,
+		cli: cli,
 	}, nil
 }
 
@@ -41,39 +37,46 @@ func (r *redisDB) Close() error {
 }
 
 func (r *redisDB) Len() int64 {
-	return atomic.LoadInt64(r.length)
+	length, err := r.cli.Incr(KEY_NUMS).Result()
+	if err != nil {
+		panic(err)
+	}
+	return length
 }
 
-func (r *redisDB) SetShort(md5sum, shortURL string) error {
-	if err := r.set(md5sum, shortURL); err != nil {
+func (r *redisDB) Store(URL *types.URL) error {
+	var ttl time.Duration
+	if URL.Expire != nil {
+		ttl = URL.Expire.Sub(time.Now())
+	}
+	err := r.cli.Set(URL.Hash, URL.Bytes(), ttl).Err()
+	if err != nil {
 		return err
 	}
-	atomic.AddInt64(r.length, 1)
-	return nil
+
+	return r.cli.Set(URL.Short, URL.Bytes(), ttl).Err()
 }
 
-func (r *redisDB) GetShort(md5sum string) (short string, err error) {
-	return r.get(md5sum)
+func (r *redisDB) GetShort(hashSum string) (URL *types.URL, err error) {
+	return r.get(hashSum)
 }
 
-func (r *redisDB) SetLong(shortURL, longURL string) error {
-	return r.set(shortURL, longURL)
+func (r *redisDB) GetLong(short string) (URL *types.URL, err error) {
+	return r.get(short)
 }
 
-func (r *redisDB) GetLong(md5sum string) (long string, err error) {
-	return r.get(md5sum)
-}
-
-func (r *redisDB) set(key, value string) error {
-	return r.cli.Set(key, value, -1).Err()
-}
-
-func (r *redisDB) get(key string) (value string, err error) {
+func (r *redisDB) get(key string) (URL *types.URL, err error) {
 	stringCmd := r.cli.Get(key)
 	if err := stringCmd.Err(); err != nil {
 		if err == redis.Nil {
-			return "", types.ErrNotFound
+			return nil, types.ErrNotFound
 		}
+		return nil, err
 	}
-	return stringCmd.String(), nil
+	bs, err := stringCmd.Bytes()
+	if err != nil {
+		return nil, err
+	}
+	u := new(types.URL)
+	return u.Decode(bs), nil
 }

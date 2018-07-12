@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/wrfly/ecp"
+
 	"github.com/sirupsen/logrus"
 	"github.com/wrfly/yasuser/utils"
 	yaml "gopkg.in/yaml.v2"
@@ -13,6 +15,7 @@ import (
 type SrvConfig struct {
 	Domain string `default:"https://u.kfd.me"`
 	Port   int    `default:"8084"`
+	Limit  int64  `default:"10"`
 	Pprof  bool   `default:"false"`
 	GAID   string `default:"62244864-8"`
 }
@@ -62,21 +65,9 @@ func (c *Config) Parse(filePath string) {
 		logrus.Fatal(utils.AddLineNum(err))
 	}
 }
-
-func (c *Config) CombineWithENV() {
-	utils.ParseConfigEnv(c, []string{"YASUSER"})
-}
-
-func (c *Config) EnvConfigLists() []string {
-	return utils.EnvConfigLists(c, []string{"YASUSER"})
-}
-
-func (c *Config) setDefault() {
-	utils.DefaultConfig(c)
-}
-
 func (c *Config) Example() {
-	c.setDefault()
+	ecp.Default(c)
+
 	bs, err := yaml.Marshal(*c)
 	if err != nil {
 		logrus.Fatalf("marshal yaml error: %s", utils.AddLineNum(err))

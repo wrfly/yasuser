@@ -32,8 +32,8 @@ func newBoltDB(path string) (*boltDB, error) {
 		db:     db,
 		length: &skipKeyNums,
 	}
-	b.createBucket(longBucket)  // shortURL -> longURL
-	b.createBucket(shortBucket) // longURL's MD5 -> shortURL
+	b.createBucket(longBucket)  // short -> URL
+	b.createBucket(shortBucket) // Hash  -> URL
 
 	b.db.View(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket([]byte(shortBucket))
@@ -42,23 +42,6 @@ func newBoltDB(path string) (*boltDB, error) {
 	})
 
 	return b, nil
-}
-
-func (b *boltDB) Close() error {
-	b.db.Close()
-	return nil
-}
-
-func (b *boltDB) SetShort(md5sum, shortURL string) error {
-	err := b.set(shortBucket, md5sum, shortURL)
-	if err == nil {
-		atomic.AddInt64(b.length, 1)
-	}
-	return err
-}
-
-func (b *boltDB) GetShort(md5sum string) (string, error) {
-	return b.get(shortBucket, md5sum)
 }
 
 func (b *boltDB) createBucket(bucketName string) error {
@@ -71,38 +54,56 @@ func (b *boltDB) createBucket(bucketName string) error {
 	})
 }
 
-func (b *boltDB) Len() int64 {
-	return atomic.LoadInt64(b.length)
+func (b *boltDB) Close() error {
+	b.db.Close()
+	return nil
 }
 
-func (b *boltDB) SetLong(shortURL, longURL string) error {
-	return b.set(longBucket, shortURL, longURL)
-}
+func (b *boltDB) Store(URL *types.URL) error {
+	logrus.Debugf("store %v", URL)
 
-func (b *boltDB) GetLong(shortURL string) (string, error) {
-	return b.get(longBucket, shortURL)
-}
-
-func (b *boltDB) set(bkName, key, value string) error {
-	logrus.Debugf("bolt set [%s]: '%s'='%s'", bkName, key, value)
 	return b.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(bkName))
-		err := b.Put([]byte(key), []byte(value))
-		return err
-	})
-}
-
-func (b *boltDB) get(bkName, key string) (value string, err error) {
-	err = b.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(bkName))
-		v := b.Get([]byte(key))
-		value = string(v)
-		if value == "" {
-			return types.ErrNotFound
+		err := tx.Bucket([]byte(shortBucket)).
+			Put(URL.HashSum(), URL.Bytes())
+		if err != nil {
+			return err
+		}
+		err = tx.Bucket([]byte(longBucket)).
+			Put(URL.ShortURL(), URL.Bytes())
+		if err != nil {
+			tx.Rollback()
+			return err
 		}
 		return nil
 	})
-	logrus.Debugf("bolt get [%s]: '%s'='%s'", bkName, key, value)
+}
 
-	return
+func (b *boltDB) GetShort(hashSum string) (*types.URL, error) {
+	return b.get(shortBucket, hashSum)
+}
+
+// Len returns the currerent length of keys, and +1
+// use atomic for concurrency conflict handling
+func (b *boltDB) Len() int64 {
+	return atomic.AddInt64(b.length, 1) - 1
+}
+
+func (b *boltDB) GetLong(shortURL string) (*types.URL, error) {
+	return b.get(longBucket, shortURL)
+}
+
+func (b *boltDB) get(bkName, key string) (*types.URL, error) {
+	u := new(types.URL)
+	err := b.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bkName))
+		v := b.Get([]byte(key))
+		if len(v) == 0 {
+			return types.ErrNotFound
+		}
+		u.Decode(v)
+		return nil
+	})
+	logrus.Debugf("bolt get [%s]: %s=%v", bkName, key, u)
+
+	return u, err
 }

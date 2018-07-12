@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/types"
 )
 
 const (
@@ -15,16 +16,15 @@ const (
 
 var skipKeyNums int64 = 99
 
-// Database is a KV storage, there two relationships
+// Database is a KV storage, there are two relationships
 // hashSum -> short & short -> long
 // hashSum is the URL's hashSum
 type Database interface {
 	Close() error
 	Len() int64
-	SetShort(hashSum, shortURL string) error
-	GetShort(hashSum string) (short string, err error)
-	SetLong(shortURL, longURL string) error
-	GetLong(hashSum string) (long string, err error)
+	Store(URL *types.URL) error
+	GetShort(hashSum string) (URL *types.URL, err error)
+	GetLong(short string) (URL *types.URL, err error)
 }
 
 // New DB storage

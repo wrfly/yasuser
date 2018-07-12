@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/wrfly/ecp"
 	"gopkg.in/urfave/cli.v2"
 
 	"github.com/wrfly/yasuser/config"
@@ -13,10 +14,12 @@ import (
 	"github.com/wrfly/yasuser/shortener"
 )
 
+var appName = "yasuser"
+
 func main() {
 
 	app := &cli.App{
-		Name:    "yasuser",
+		Name:    appName,
 		Usage:   "Yet another self-hosted URL shortener.",
 		Authors: author,
 		Version: fmt.Sprintf("Version: %s\tCommit: %s\tDate: %s",
@@ -47,13 +50,16 @@ func main() {
 				return nil
 			}
 			if c.Bool("env-list") {
-				for _, e := range conf.EnvConfigLists() {
+				for _, e := range ecp.List(conf, appName) {
 					fmt.Println(e)
 				}
 				return nil
 			}
 			conf.Parse(c.String("config"))
-			conf.CombineWithENV()
+			if err := ecp.Parse(conf, appName); err != nil {
+				logrus.Error(err)
+				return err
+			}
 
 			if conf.Debug {
 				logrus.SetLevel(logrus.DebugLevel)

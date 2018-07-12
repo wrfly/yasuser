@@ -5,7 +5,23 @@ import (
 	"fmt"
 
 	"github.com/OneOfOne/xxhash"
+
+	"github.com/wrfly/yasuser/types"
 )
+
+func HashURL(url string, opts *types.ShortOptions) string {
+	// custom URL connot exist with TTL
+	in := fmt.Sprintf("%s:%s", url, opts.Passwd)
+	if opts.TTL.Seconds() != 0 {
+		in = fmt.Sprintf("%s:%s:%s",
+			url, opts.Passwd, opts.TTL.String())
+	}
+	if opts.Custom != "" {
+		in = fmt.Sprintf("%s:%s:%s",
+			url, opts.Custom, opts.Passwd)
+	}
+	return XXHash(in)
+}
 
 func XXHash(in string) string {
 	return fmt.Sprintf("%x", xxhash.ChecksumString64(in))

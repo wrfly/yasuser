@@ -30,12 +30,7 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
-	srv := server{
-		domain: conf.Domain,
-		stener: shortener,
-		gaID:   conf.GAID,
-	}
-	srv.init()
+	srv := newServer(conf, shortener)
 
 	engine := gin.New()
 	engine.GET("/", srv.handleIndex())
