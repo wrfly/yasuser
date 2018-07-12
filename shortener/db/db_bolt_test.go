@@ -32,11 +32,11 @@ func TestBoltDB(t *testing.T) {
 
 	uShort, err := db.GetShort(u.Hash)
 	assert.NoError(t, err)
-	assert.Equal(t, uShort, u)
+	assert.Equal(t, uShort.Bytes(), u.Bytes())
 
 	uLong, err := db.GetLong(u.Short)
 	assert.NoError(t, err)
-	assert.Equal(t, uLong, u)
+	assert.Equal(t, uLong.Bytes(), u.Bytes())
 
 	_, err = db.GetShort("nonono")
 	assert.Error(t, types.ErrNotFound)

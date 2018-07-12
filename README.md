@@ -16,7 +16,7 @@ but under **YOUR** control.
 docker run --name yasuser -dti \
     -p 8084:8084 \
     -e YASUSER_SHORTENER_STORE_DBPATH=/data/yasuser.db \
-    -e YASUSER_SERVER_DOMAIN=your.domain.com \
+    -e YASUSER_SERVER_DOMAIN=http://localhost:8084 \
     -v `pwd`:/data \
     wrfly/yasuser
 ```
@@ -76,9 +76,21 @@ https://u.kfd.me/kfd
 custom URL already exist
 
 # restore the customized URL
-➜  ~ curl localhost:8084/kfd
+➜  ~ curl https://u.kfd.me/kfd
 <a href="https://kfd.me/hello">Found</a>.
 
+# set TTL for a URL; bolt db will tell you the URL is expired while
+# the redis will just delete it
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/kfd" -H "ttl: 1s"
+https://u.kfd.me/1B
+➜  ~ sleep 1 && curl https://u.kfd.me/1B
+url expired
+
+# set TTL for a customized URL
+➜  ~ curl https://u.kfd.me/ -d "https://kfd.me/kfd" -H "ttl: 1s" -H "custom: 666"
+https://u.kfd.me/666
+➜  ~ sleep 1 && curl https://u.kfd.me/666
+url expired
 ```
 
 Or just visit the web page:
