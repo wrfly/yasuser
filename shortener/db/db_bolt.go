@@ -74,16 +74,6 @@ func (b *boltDB) Store(URL *types.URL) error {
 			tx.Rollback()
 			return err
 		}
-		if URL.Custom == "" {
-			return nil
-		}
-		// store custom
-		err = tx.Bucket([]byte(longBucket)).
-			Put([]byte(URL.Custom), URL.Bytes())
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
 		return nil
 	})
 }

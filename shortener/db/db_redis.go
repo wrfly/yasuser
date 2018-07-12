@@ -11,6 +11,8 @@ type redisDB struct {
 	cli *redis.Client
 }
 
+const KEY_NUMS = "KEY_NUMS"
+
 func newRedisDB(redisAddr string) (*redisDB, error) {
 	opts, err := redis.ParseURL(redisAddr)
 	if err != nil {
@@ -20,6 +22,9 @@ func newRedisDB(redisAddr string) (*redisDB, error) {
 
 	if err := cli.Ping().Err(); err != nil {
 		return nil, err
+	}
+	if cli.Get(KEY_NUMS).Err() == redis.Nil {
+		cli.Set(KEY_NUMS, skipKeyNums, -1)
 	}
 
 	return &redisDB{
@@ -32,51 +37,46 @@ func (r *redisDB) Close() error {
 }
 
 func (r *redisDB) Len() int64 {
-	length, err := r.cli.Incr("KEY_NUMS").Result()
+	length, err := r.cli.Incr(KEY_NUMS).Result()
 	if err != nil {
 		panic(err)
 	}
-	length /= 2
-	length += skipKeyNums
-
 	return length
 }
 
-func (r *redisDB) Store(hashSum, shortURL, longURL string) error {
-	if err := r.set(hashSum, shortURL); err != nil {
+func (r *redisDB) Store(URL *types.URL) error {
+	var ttl time.Duration
+	if URL.Expire != nil {
+		ttl = URL.Expire.Sub(time.Now())
+	}
+	err := r.cli.Set(URL.Hash, URL.Bytes(), ttl).Err()
+	if err != nil {
 		return err
 	}
-	// TODO: what if set failed, need to rollback?
-	return r.set(shortURL, longURL)
+
+	return r.cli.Set(URL.Short, URL.Bytes(), ttl).Err()
 }
 
-func (r *redisDB) GetShort(hashSum string) (short string, err error) {
+func (r *redisDB) GetShort(hashSum string) (URL *types.URL, err error) {
 	return r.get(hashSum)
 }
 
-func (r *redisDB) GetLong(shortURL string) (long string, err error) {
-	return r.get(shortURL)
+func (r *redisDB) GetLong(short string) (URL *types.URL, err error) {
+	return r.get(short)
 }
 
-func (r *redisDB) set(key, value string) error {
-	return r.cli.Set(key, value, -1).Err()
-}
-
-func (r *redisDB) get(key string) (value string, err error) {
+func (r *redisDB) get(key string) (URL *types.URL, err error) {
 	stringCmd := r.cli.Get(key)
 	if err := stringCmd.Err(); err != nil {
 		if err == redis.Nil {
-			return "", types.ErrNotFound
+			return nil, types.ErrNotFound
 		}
-		return "", err
+		return nil, err
 	}
-	return stringCmd.String(), nil
-}
-
-func (r *redisDB) StoreWithTTL(hashSum, shortURL, longURL string, ttl time.Duration) error {
-	if err := r.cli.Set(hashSum, shortURL, ttl).Err(); err != nil {
-		return err
+	bs, err := stringCmd.Bytes()
+	if err != nil {
+		return nil, err
 	}
-	// TODO: what if set failed, need to rollback?
-	return r.cli.Set(shortURL, longURL, ttl).Err()
+	u := new(types.URL)
+	return u.Decode(bs), nil
 }

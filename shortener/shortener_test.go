@@ -41,7 +41,7 @@ func TestShorter(t *testing.T) {
 		for i := 0; i < 10; i++ {
 			URL := fmt.Sprintf("http://with.ttl=%v", i)
 			short, err := s.Shorten(URL, &types.ShortOptions{
-				TTL: time.Second,
+				TTL: time.Second * 2,
 			})
 			if err != nil {
 				t.Error(err)
@@ -51,7 +51,7 @@ func TestShorter(t *testing.T) {
 			shortURLs[i] = short.Short
 		}
 
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 2)
 
 		for _, sURL := range shortURLs {
 			_, err := s.Restore(sURL)
@@ -70,7 +70,7 @@ func TestShorter(t *testing.T) {
 				t.Error(err)
 			}
 			long, _ := s.Restore(short.Short)
-			assert.Equal(t, custom, long.Custom)
+			assert.Equal(t, custom, long.Short)
 		}
 	})
 

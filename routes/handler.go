@@ -152,12 +152,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			return
 		}
 
-		short := shortURL.Short
-		if shortURL.Custom != "" {
-			short = shortURL.Custom
-		}
-
-		c.String(200, fmt.Sprintf("%s/%s", s.domain, short))
+		c.String(200, fmt.Sprintf("%s/%s", s.domain, shortURL.Short))
 	}
 }
 

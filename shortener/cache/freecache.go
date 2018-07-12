@@ -23,7 +23,7 @@ func (c Cacher) Store(u *types.URL) {
 	exp := -1
 	if u.Expire != nil && !u.Expire.IsZero() {
 		exp = int(u.Expire.Sub(time.Now()).Seconds())
-		if exp < 0 {
+		if exp <= 0 {
 			// less than 1s
 			return
 		}
@@ -31,9 +31,6 @@ func (c Cacher) Store(u *types.URL) {
 	}
 	c.cache.Set(u.ShortURL(), u.Bytes(), exp)
 	c.cache.Set(u.HashSum(), u.Bytes(), exp)
-	if u.Custom != "" {
-		c.cache.Set([]byte(u.Custom), u.Bytes(), exp)
-	}
 }
 
 func (c Cacher) Get(key string) (*types.URL, error) {

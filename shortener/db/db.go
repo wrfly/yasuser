@@ -34,7 +34,7 @@ func New(conf config.StoreConfig) (Database, error) {
 	case BOLT:
 		return newBoltDB(conf.DBPath)
 	case REDIS:
-		// return newRedisDB(conf.Redis)
+		return newRedisDB(conf.Redis)
 	}
 	return nil, fmt.Errorf("Unknown DB Type: %s", conf.DBType)
 }
