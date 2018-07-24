@@ -109,9 +109,14 @@ func (s *server) handleURI() gin.HandlerFunc {
 			if shortURL, err := s.stener.Restore(URI); err != nil {
 				c.String(http.StatusNotFound, fmt.Sprintln(err.Error()))
 			} else {
-				c.Redirect(http.StatusPermanentRedirect, shortURL.Ori)
+				if shortURL.Expire != nil {
+					c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
+				} else {
+					c.Redirect(http.StatusPermanentRedirect, shortURL.Ori)
+				}
 			}
 		}
+
 	}
 }
 
@@ -132,28 +137,32 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 		defer urlBufferPool.Put(buf)
 		n, err := c.Request.Body.Read(buf)
 		if err != io.EOF && err != nil {
-			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s\n", err))
+			badRequest(c, err)
 			return
 		}
 		if n > MAX_URL_LENGTH {
-			c.String(http.StatusBadRequest, fmt.Sprintln("Bad request, URL too long"))
+			badRequest(c, types.ErrURLTooLong)
 			return
 		}
 
 		longURL := fmt.Sprintf("%s", buf[:n])
-		if s.invalidURL(longURL) {
-			c.String(http.StatusBadRequest, fmt.Sprintln("Invalid URL"))
+		if err := s.invalidURL(longURL); err != nil {
+			badRequest(c, err)
 			return
 		}
 
 		shortURL, err := s.stener.Shorten(longURL, generateOptions(c.Request.Header))
 		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
+			badRequest(c, err)
 			return
 		}
 
-		c.String(200, fmt.Sprintf("%s/%s", s.domain, shortURL.Short))
+		c.String(200, fmt.Sprintf("%s/%s\n", s.domain, shortURL.Short))
 	}
+}
+
+func badRequest(c *gin.Context, err error) {
+	c.String(http.StatusBadRequest, err.Error())
 }
 
 func generateOptions(h http.Header) *types.ShortOptions {
@@ -171,20 +180,20 @@ func generateOptions(h http.Header) *types.ShortOptions {
 	}
 }
 
-func (s *server) invalidURL(URL string) bool {
+func (s *server) invalidURL(URL string) error {
 	u, err := url.Parse(URL)
 	if err != nil {
-		return true
+		return err
 	}
 
 	if u.Host == s.host {
-		return true
+		return types.ErrSameHost
 	}
 
 	switch u.Scheme {
 	case "http", "https", "ftp", "tcp":
-		return false
+		return nil
 	default:
-		return true
+		return types.ErrScheme
 	}
 }
