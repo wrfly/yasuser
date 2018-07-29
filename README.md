@@ -120,5 +120,5 @@ See [benchmark](benchmark/readme.md)
   - [ ] runtime metrics
 - [x] UI index
   - [x] google analytics
-  - [ ] prettify the index
+  - [x] prettify the index
 - [x] pprof

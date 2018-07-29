@@ -1,9 +1,10 @@
 body {
     background-color: dodgerblue;
     color: aliceblue;
+    font-family: monospace, Arial, Helvetica, sans-serif;
 }
 
-* {
+.center {
     margin-top: 3%;
     text-align: center;
 }
@@ -26,3 +27,30 @@ main {
 footer {
     padding-top: 50px;
 }
+
+.example {
+    text-align: left;
+    margin-top: 10px;
+    padding-top: 30px;
+    padding-left: 35%;
+}
+
+input {
+    border-left: #fff 1px solid;
+    border-top: #fff 1px solid;
+    border-right: #fff 1px solid;
+    border-bottom: #fff 1px solid;
+    margin: 0px 0px 15px 10px;
+    padding-left: 10px;
+    font-size: 1em;
+    line-height: 1.5em;
+    height: 25px;
+    border: 1px;
+    border-radius: 4px;
+} 
+
+button {
+    height: 25px;
+    border: 1px;
+    border-radius: 4px;
+} 
