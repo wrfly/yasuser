@@ -18,6 +18,21 @@ import (
 	"github.com/wrfly/yasuser/types"
 )
 
+const (
+	maxPasswdLength = 60
+	maxCustomLength = 60
+)
+
+var validCustomURI *regexp.Regexp
+
+func init() {
+	validURI, err := regexp.Compile("^[a-zA-Z0-9][a-zA-Z0-9_+-]+$")
+	if err != nil {
+		panic(err)
+	}
+	validCustomURI = validURI
+}
+
 type server struct {
 	domain string
 	gaID   string
@@ -128,7 +143,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			s.tb[IP] = tokenbucket.New(s.limit, time.Second)
 		} else {
 			if !tb.TakeOne() {
-				c.String(http.StatusBadRequest, "rate exceeded\n")
+				badRequest(c, fmt.Errorf("rate exceeded"))
 				return
 			}
 		}
@@ -151,7 +166,12 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			return
 		}
 
-		shortURL, err := s.stener.Shorten(longURL, generateOptions(c.Request.Header))
+		opts, err := generateOptions(c.Request.Header)
+		if err != nil {
+			badRequest(c, err)
+			return
+		}
+		shortURL, err := s.stener.Shorten(longURL, opts)
 		if err != nil {
 			badRequest(c, err)
 			return
@@ -162,22 +182,46 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 }
 
 func badRequest(c *gin.Context, err error) {
-	c.String(http.StatusBadRequest, err.Error())
+	c.String(http.StatusBadRequest, fmt.Sprintln(err.Error()))
 }
 
-func generateOptions(h http.Header) *types.ShortOptions {
-	var duration time.Duration = -1
-	customURL := h.Get("CUSTOM")
+func generateOptions(h http.Header) (*types.ShortOptions, error) {
+	var (
+		duration time.Duration = -1
+		err      error
+	)
+
+	customURI := h.Get("CUSTOM")
 	passWord := h.Get("PASS")
 	ttl := h.Get("TTL")
 	if ttl != "" {
-		duration, _ = time.ParseDuration(ttl)
+		duration, err = time.ParseDuration(ttl)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	if len(passWord) > maxPasswdLength {
+		return nil, fmt.Errorf("passwd length exceeded, max %d",
+			maxPasswdLength)
+	}
+
+	if customURI != "" {
+		if len(customURI) > maxCustomLength {
+			return nil, fmt.Errorf("custom URI length exceeded, max %d",
+				maxCustomLength)
+		}
+		if !validCustomURI.MatchString(customURI) {
+			return nil, fmt.Errorf("invalid custom URI, must match %s",
+				validCustomURI.String())
+		}
+	}
+
 	return &types.ShortOptions{
-		Custom: customURL,
+		Custom: customURI,
 		TTL:    duration,
 		Passwd: passWord,
-	}
+	}, nil
 }
 
 func (s *server) invalidURL(URL string) error {

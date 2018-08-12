@@ -34,6 +34,7 @@ type Config struct {
 	Debug     bool `default:"false"`
 	Shortener ShortenerConfig
 	Server    SrvConfig
+	Auth      string `default:"passwd"`
 }
 
 func New() *Config {
