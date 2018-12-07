@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/wrfly/yasuser/filter"
+
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-gonic/gin"
 	"github.com/wrfly/testing-kit/util/tokenbucket"
@@ -41,6 +43,7 @@ type server struct {
 	stener        stner.Shortener
 	indexTemplate *template.Template
 	fileMap       map[string]bool
+	filter        filter.Filter
 
 	host string
 	tb   map[string]*tokenbucket.Bucket
@@ -81,6 +84,9 @@ func (s *server) init() {
 	s.host = u.Host
 
 	s.tb = make(map[string]*tokenbucket.Bucket, 0)
+
+	// TODO: create a filter
+	s.filter = nil
 }
 
 func (s *server) handleIndex() gin.HandlerFunc {
@@ -118,17 +124,19 @@ func (s *server) handleURI() gin.HandlerFunc {
 				AssetInfo: AssetInfo,
 				Prefix:    "/",
 			}).ServeHTTP(c.Writer, c.Request)
-
-		default:
-			// handle shortURL
-			if shortURL, err := s.stener.Restore(URI); err != nil {
-				c.String(http.StatusNotFound, fmt.Sprintln(err.Error()))
+		}
+		// handle shortURL
+		if shortURL, err := s.stener.Restore(URI); err != nil {
+			c.String(http.StatusNotFound, fmt.Sprintln(err))
+		} else {
+			if err := s.invalidURL(shortURL.Ori); err != nil {
+				c.String(http.StatusBadGateway, fmt.Sprintln(err))
+				return
+			}
+			if shortURL.Expire != nil {
+				c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
 			} else {
-				if shortURL.Expire != nil {
-					c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
-				} else {
-					c.Redirect(http.StatusPermanentRedirect, shortURL.Ori)
-				}
+				c.String(http.StatusForbidden, "URL expired")
 			}
 		}
 
@@ -230,8 +238,25 @@ func (s *server) invalidURL(URL string) error {
 		return err
 	}
 
-	if u.Host == s.host {
+	domain := u.Hostname()
+	if s.filter.InWhiteList(domain) {
+		return nil // bypass
+	}
+
+	if domain == s.host {
 		return types.ErrSameHost
+	}
+
+	if s.filter.InBlackList(domain) {
+		return filter.ErrInBlackList
+	}
+
+	if s.filter.BadKeyword(u.Path) {
+		return filter.ErrBadKeyword
+	}
+
+	if s.filter.Removed(domain) {
+		return filter.ErrRemoved
 	}
 
 	switch u.Scheme {
