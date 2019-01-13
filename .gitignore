@@ -17,3 +17,5 @@ vendor/
 
 yasuser
 yasuser.db
+
+.vscode/*

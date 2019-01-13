@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/wrfly/ecp"
-
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/yasuser/utils"
+	"github.com/wrfly/ecp"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/wrfly/yasuser/utils"
 )
 
 type SrvConfig struct {

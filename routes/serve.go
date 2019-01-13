@@ -32,24 +32,25 @@ func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
 
 	srv := newServer(conf, shortener)
 
-	engine := gin.New()
-	engine.GET("/", srv.handleIndex())
-	engine.POST("/", srv.handleLongURL())
-	engine.GET("/:URI", srv.handleURI())
+	e := gin.New()
+
+	e.GET("/", srv.handleIndex())
+	e.POST("/", srv.handleLongURL())
+	e.GET("/:URI", srv.handleURI())
 
 	// go tool pprof
 	if conf.Pprof {
-		engine.GET("/:URI/pprof/", func(c *gin.Context) {
+		e.GET("/:URI/pprof/", func(c *gin.Context) {
 			pprof.Index(c.Writer, c.Request)
 		})
-		engine.GET("/:URI/pprof/:x", func(c *gin.Context) {
+		e.GET("/:URI/pprof/:x", func(c *gin.Context) {
 			pprof.Index(c.Writer, c.Request)
 		})
 	}
 
 	httpServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", conf.Port),
-		Handler: engine,
+		Handler: e,
 	}
 
 	errChan := make(chan error)

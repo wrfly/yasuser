@@ -42,11 +42,10 @@ push-dev-img:
 
 .PHONY: tools
 tools:
-	go get github.com/jteeuwen/go-bindata/...
-	go get github.com/elazarl/go-bindata-assetfs/...
+	go get github.com/wrfly/bindata
 
 .PHONY: asset
 asset:
-	go-bindata-assetfs -nometadata -prefix routes/index -pkg routes routes/index/...
-	mv bindata_assetfs.go routes/asset.go
-	gofmt -w routes/asset.go
+	bindata -pkg asset \
+		-resource routes/index \
+		-target routes/asset
