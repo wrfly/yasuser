@@ -38,13 +38,7 @@ type Config struct {
 }
 
 func New() *Config {
-	conf := Config{
-		Server: SrvConfig{},
-		Shortener: ShortenerConfig{
-			Store: StoreConfig{},
-		},
-	}
-	return &conf
+	return &Config{}
 }
 
 func (c *Config) Parse(filePath string) {

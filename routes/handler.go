@@ -45,44 +45,37 @@ type server struct {
 	filter        filter.Filter
 
 	host string
-	tb   map[string]*tokenbucket.Bucket
+	tb   map[string]tokenbucket.Bucket
 }
 
 func newServer(conf config.SrvConfig, shortener stner.Shortener) server {
-	srv := server{
-		domain:  conf.Domain,
-		stener:  shortener,
-		gaID:    conf.GAID,
-		limit:   conf.Limit,
-		fileMap: make(map[string]bool),
-	}
-	srv.init()
-
-	return srv
-}
-
-func (s *server) init() {
-	for _, a := range asset.Data.List() {
-		s.fileMap[a.Name()] = true
-	}
-
 	a, err := asset.Data.Asset("/index.html")
 	if err != nil {
 		panic(err)
 	}
 
-	s.indexTemplate = a.Template()
-
-	u, err := url.Parse(s.domain)
+	u, err := url.Parse(conf.Domain)
 	if err != nil {
 		panic(err)
 	}
-	s.host = u.Host
 
-	s.tb = make(map[string]*tokenbucket.Bucket, 0)
+	srv := server{
+		domain:  conf.Domain,
+		host:    u.Host,
+		stener:  shortener,
+		gaID:    conf.GAID,
+		limit:   conf.Limit,
+		fileMap: make(map[string]bool),
+		tb:      make(map[string]tokenbucket.Bucket, 0),
+		// TODO: create a filter
+		filter:        nil,
+		indexTemplate: a.Template(),
+	}
+	for _, a := range asset.Data.List() {
+		srv.fileMap[a.Name()] = true
+	}
 
-	// TODO: create a filter
-	s.filter = nil
+	return srv
 }
 
 func (s *server) handleIndex() gin.HandlerFunc {
