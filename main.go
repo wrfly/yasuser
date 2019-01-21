@@ -10,6 +10,7 @@ import (
 	"gopkg.in/urfave/cli.v2"
 
 	"github.com/wrfly/yasuser/config"
+	"github.com/wrfly/yasuser/filter"
 	"github.com/wrfly/yasuser/routes"
 	"github.com/wrfly/yasuser/shortener"
 )
@@ -67,7 +68,11 @@ func main() {
 				gin.SetMode(gin.ReleaseMode)
 			}
 
-			err := routes.Serve(conf.Server, shortener.New(conf.Shortener))
+			err := routes.Serve(
+				conf.Server,
+				shortener.New(conf.Store),
+				filter.New(conf.Filter),
+			)
 			if err != nil {
 				logrus.Error(err)
 			}

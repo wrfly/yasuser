@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/wrfly/ecp"
-
 	"github.com/sirupsen/logrus"
-	"github.com/wrfly/yasuser/utils"
+	"github.com/wrfly/ecp"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/wrfly/yasuser/utils"
 )
 
 type SrvConfig struct {
@@ -26,24 +26,26 @@ type StoreConfig struct {
 	Redis  string `default:"redis://localhost:6379"`
 }
 
-type ShortenerConfig struct {
-	Store StoreConfig
+type list struct {
+	WhiteList []string
+	BlackList []string
+}
+
+type Filter struct {
+	Domain  list
+	Keyword list
 }
 
 type Config struct {
-	Debug     bool `default:"false"`
-	Shortener ShortenerConfig
-	Server    SrvConfig
+	Debug  bool   `default:"false"`
+	Auth   string `default:"password"`
+	Store  StoreConfig
+	Server SrvConfig
+	Filter Filter
 }
 
 func New() *Config {
-	conf := Config{
-		Server: SrvConfig{},
-		Shortener: ShortenerConfig{
-			Store: StoreConfig{},
-		},
-	}
-	return &conf
+	return &Config{}
 }
 
 func (c *Config) Parse(filePath string) {

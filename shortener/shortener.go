@@ -20,29 +20,29 @@ type Shortener interface {
 	Restore(short string) (*types.URL, error)
 }
 
-type db_Shortener struct {
+type shortener struct {
 	db     db.Database
 	cacher cache.Cacher
 }
 
-func New(conf config.ShortenerConfig) Shortener {
-	db, err := db.New(conf.Store)
+func New(conf config.StoreConfig) Shortener {
+	db, err := db.New(conf)
 	if err != nil {
 		logrus.Fatalf("Create Shortener error: %v", err)
 	}
 
-	return db_Shortener{
+	return shortener{
 		db:     db,
 		cacher: cache.NewCacher(100 * 1024 * 1024),
 	}
 }
 
 // Shorten a long URL
-func (stner db_Shortener) Shorten(long string, opts *types.ShortOptions) (*types.URL, error) {
+func (s shortener) Shorten(long string, opts *types.ShortOptions) (*types.URL, error) {
 	// check custom URL
 	if opts == nil {
 		opts = &types.ShortOptions{}
-	} else if stner.customURLAlreadyExist(opts.Custom, long) {
+	} else if s.customURLAlreadyExist(opts.Custom, long) {
 		return nil, types.ErrAlreadyExist
 	}
 
@@ -50,15 +50,15 @@ func (stner db_Shortener) Shorten(long string, opts *types.ShortOptions) (*types
 	hashSum := utils.HashURL(long, opts)
 
 	// get from mem-cache
-	if cacheURL, err := stner.cacher.Get(hashSum); err == nil {
+	if cacheURL, err := s.cacher.Get(hashSum); err == nil {
 		logrus.Debugf("cache get %s=%s", long, cacheURL.Short)
 		return cacheURL, nil
 	}
 
 	// cache not found, check database
-	if shortURL, err := stner.db.GetShort(hashSum); err == nil {
+	if shortURL, err := s.db.GetShort(hashSum); err == nil {
 		if !shortURL.Expired() {
-			stner.cacher.Store(shortURL)
+			s.cacher.Store(shortURL)
 			return shortURL, nil
 		}
 		logrus.Debugf("url expired or new customURL, re-create it")
@@ -69,18 +69,18 @@ func (stner db_Shortener) Shorten(long string, opts *types.ShortOptions) (*types
 	logrus.Debugf("url %s not found, create a new one", long)
 
 	short := opts.Custom
-	keyNums := stner.db.Len()
+	keyNums := s.db.Len()
 	if short == "" {
 		short = strings.TrimLeft(utils.CalHash(keyNums), "0")
 	}
 	logrus.Debugf("short %s to %s", long, short)
 
 	u := newURL(hashSum, short, long, opts)
-	if err := stner.db.Store(u); err != nil {
+	if err := s.db.Store(u); err != nil {
 		return nil, err
 	}
 
-	stner.cacher.Store(u)
+	s.cacher.Store(u)
 	logrus.Debugf("shorten URL: [ %s ] -> [ %s ]; opts: %v", long, short, opts)
 
 	return u, nil
@@ -100,9 +100,9 @@ func newURL(hashSum, short, long string, opts *types.ShortOptions) *types.URL {
 }
 
 // Restore a short URL
-func (stner db_Shortener) Restore(short string) (*types.URL, error) {
+func (s shortener) Restore(short string) (*types.URL, error) {
 	// found in cache
-	if cacheURL, err := stner.cacher.Get(short); err == nil {
+	if cacheURL, err := s.cacher.Get(short); err == nil {
 		logrus.Debugf("cache get %s=%s", short, cacheURL)
 		if cacheURL.Expired() {
 			return nil, types.ErrURLExpired
@@ -110,7 +110,7 @@ func (stner db_Shortener) Restore(short string) (*types.URL, error) {
 		return cacheURL, nil
 	}
 
-	URL, err := stner.db.GetLong(short)
+	URL, err := s.db.GetLong(short)
 	if err != nil {
 		if err == types.ErrNotFound {
 			return nil, err
@@ -122,17 +122,17 @@ func (stner db_Shortener) Restore(short string) (*types.URL, error) {
 		return nil, types.ErrURLExpired
 	}
 
-	stner.cacher.Store(URL)
+	s.cacher.Store(URL)
 	logrus.Debugf("restore url [ %s ] -> [ %s ]", short, URL.Ori)
 
 	return URL, nil
 }
 
-func (stner db_Shortener) customURLAlreadyExist(short, long string) bool {
+func (s shortener) customURLAlreadyExist(short, long string) bool {
 	if short == "" {
 		return false
 	}
-	if url, err := stner.Restore(short); err == nil {
+	if url, err := s.Restore(short); err == nil {
 		if url.Expired() {
 			return false
 		}

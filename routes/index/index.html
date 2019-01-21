@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Yasuser</title>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="main.css"/>
+    <link rel="stylesheet" type="text/css" href="main.css" />
     <script src="clipboard.min.js"></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-{{ .gaID }}"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'UA-{{ .gaID }}');
+        window.dataLayer = window.dataLayer || [];function gtag() {dataLayer.push(arguments);}
+        gtag('js', new Date());gtag('config', 'UA-{{ .gaID }}');
     </script>
 </head>
+
 <body>
-    <main>
+    <main class="center">
         <h1>yasuser</h1>
         <p>Yet another self-hosted URL shortener.</p>
         <div>
@@ -29,12 +28,29 @@
             <button id="copy" hidden="" title="Copy to clipboard" data-clipboard-target="#url">Copy</button>
             <button id="reset" hidden="" title="Reset the URL box">Reset</button>
         </div>
-        
     </main>
-    <footer>
-        {{ .domain }} | 
+
+    <div class="example">
+<pre>
+curl {{ .domain }} \
+    -d "https://your.long.domain.com/and/the/long/path"
+
+curl {{ .domain }} \
+    -d "https://your.long.domain.com/and/the/long/path" \
+    -H "custom: MY_CUSTOM_SHORT_URL"
+
+curl {{ .domain }} \
+    -d "https://your.long.domain.com/and/the/long/path" \
+    -H "CUSTOM: MY_CUSTOM_SHORT_URL" \
+    -H "TTL: 10m"
+</pre>
+    </div>
+
+    <footer class="center">
+        {{ .domain }} |
         <a href="https://github.com/wrfly/yasuser">@yasuser</a>
     </footer>
     <script src="main.js"></script>
 </body>
+
 </html>

@@ -1,11 +1,22 @@
 debug: false
-shortener:
-  store:
-    dbpath: ./yasuser.db
-    dbtype: bolt
-    redis: redis://localhost:6379
+store:
+  dbpath: ./yasuser.db
+  dbtype: bolt
+  redis: redis://localhost:6379
 server:
   domain: https://u.kfd.me
   port: 8084
+  limit: 10
   pprof: false
   gaid: 62244864-8
+filter:
+  domain:
+    whitelist:
+      - kfd.me
+    blacklist:
+      - t66y.com
+  keyword:
+    whitelist:
+      - yasuser
+    blacklist:
+      - gg
