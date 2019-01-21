@@ -15,7 +15,7 @@ import (
 	"github.com/wrfly/yasuser/config"
 	"github.com/wrfly/yasuser/filter"
 	"github.com/wrfly/yasuser/routes/asset"
-	stner "github.com/wrfly/yasuser/shortener"
+	s "github.com/wrfly/yasuser/shortener"
 	"github.com/wrfly/yasuser/types"
 )
 
@@ -24,7 +24,10 @@ const (
 	maxCustomLength = 60
 )
 
-var validCustomURI *regexp.Regexp
+var (
+	validCustomURI *regexp.Regexp
+	indexTemplate  *template.Template
+)
 
 func init() {
 	validURI, err := regexp.Compile("^[a-zA-Z0-9][a-zA-Z0-9_+-]+$")
@@ -32,6 +35,13 @@ func init() {
 		panic(err)
 	}
 	validCustomURI = validURI
+
+	a, err := asset.Data.Asset("/index.html")
+	if err != nil {
+		panic(err)
+	}
+	indexTemplate = a.Template()
+
 }
 
 type server struct {
@@ -39,20 +49,16 @@ type server struct {
 	gaID   string
 	limit  int64
 
-	stener        stner.Shortener
-	indexTemplate *template.Template
-	fileMap       map[string]bool
-	filter        filter.Filter
+	stener  s.Shortener
+	fileMap map[string]bool
+	filter  filter.Filter
 
 	host string
 	tb   map[string]tokenbucket.Bucket
 }
 
-func newServer(conf config.SrvConfig, shortener stner.Shortener) server {
-	a, err := asset.Data.Asset("/index.html")
-	if err != nil {
-		panic(err)
-	}
+func newServer(conf config.SrvConfig,
+	shortener s.Shortener, filter filter.Filter) server {
 
 	u, err := url.Parse(conf.Domain)
 	if err != nil {
@@ -67,9 +73,7 @@ func newServer(conf config.SrvConfig, shortener stner.Shortener) server {
 		limit:   conf.Limit,
 		fileMap: make(map[string]bool),
 		tb:      make(map[string]tokenbucket.Bucket, 0),
-		// TODO: create a filter
-		filter:        nil,
-		indexTemplate: a.Template(),
+		filter:  filter,
 	}
 	for _, a := range asset.Data.List() {
 		srv.fileMap[a.Name()] = true
@@ -88,7 +92,7 @@ func (s *server) handleIndex() gin.HandlerFunc {
 				s.domain, "http://longlonglong.com/long/long/long?a=1&b=2"))
 		} else {
 			// visit from a web browser
-			s.indexTemplate.Execute(c.Writer, map[string]string{
+			indexTemplate.Execute(c.Writer, map[string]string{
 				"domain": s.domain,
 				"gaID":   s.gaID,
 			})
@@ -226,31 +230,14 @@ func (s *server) invalidURL(URL string) error {
 		return err
 	}
 
-	domain := u.Hostname()
-	if s.filter.InWhiteList(domain) {
-		return nil // bypass
-	}
-
-	if domain == s.host {
+	if u.Hostname() == s.host {
 		return types.ErrSameHost
 	}
-
-	if s.filter.InBlackList(domain) {
-		return filter.ErrInBlackList
-	}
-
-	if s.filter.BadKeyword(u.Path) {
-		return filter.ErrBadKeyword
-	}
-
-	if s.filter.Removed(domain) {
-		return filter.ErrRemoved
-	}
-
 	switch u.Scheme {
 	case "http", "https", "ftp", "tcp":
-		return nil
 	default:
 		return types.ErrScheme
 	}
+
+	return s.filter.OK(u)
 }

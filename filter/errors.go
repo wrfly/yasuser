@@ -4,7 +4,6 @@ import "errors"
 
 // errors
 var (
-	ErrInBlackList = errors.New("domain in blacklist")
-	ErrBadKeyword  = errors.New("url containes bad keyword")
-	ErrRemoved     = errors.New("domain removed")
+	ErrBadDomain  = errors.New("domain in blacklist")
+	ErrBadKeyword = errors.New("url contains bad keyword")
 )

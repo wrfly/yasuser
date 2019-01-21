@@ -26,15 +26,22 @@ type StoreConfig struct {
 	Redis  string `default:"redis://localhost:6379"`
 }
 
-type ShortenerConfig struct {
-	Store StoreConfig
+type list struct {
+	WhiteList []string
+	BlackList []string
+}
+
+type Filter struct {
+	Domain  list
+	Keyword list
 }
 
 type Config struct {
-	Debug     bool `default:"false"`
-	Shortener ShortenerConfig
-	Server    SrvConfig
-	Auth      string `default:"passwd"`
+	Debug  bool   `default:"false"`
+	Auth   string `default:"password"`
+	Store  StoreConfig
+	Server SrvConfig
+	Filter Filter
 }
 
 func New() *Config {

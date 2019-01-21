@@ -16,11 +16,9 @@ func TestShorter(t *testing.T) {
 	os.Remove(tempDBPath)
 	defer os.Remove(tempDBPath)
 
-	c := config.ShortenerConfig{
-		Store: config.StoreConfig{
-			DBPath: tempDBPath,
-			DBType: "bolt",
-		},
+	c := config.StoreConfig{
+		DBPath: tempDBPath,
+		DBType: "bolt",
 	}
 	s := New(c)
 

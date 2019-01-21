@@ -112,10 +112,8 @@ See [benchmark](benchmark/readme.md)
 - [x] TTL of URL
 - [x] rate limit
 - ~~[ ] management(auth)~~
-  - [x] remove(domain)
-  - [ ] domain blacklist
-  - [ ] domain whitelist
-  - [ ] keyword filter
+  - [x] domain filter
+  - [x] keyword filter
 - [ ] statistic
   - [ ] URL status
   - [ ] runtime metrics

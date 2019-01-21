@@ -14,7 +14,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/wrfly/yasuser/config"
-	stner "github.com/wrfly/yasuser/shortener"
+	"github.com/wrfly/yasuser/filter"
+	s "github.com/wrfly/yasuser/shortener"
 )
 
 const MAX_URL_LENGTH = 1e3
@@ -26,11 +27,12 @@ var urlBufferPool = sync.Pool{
 }
 
 // Serve routes
-func Serve(conf config.SrvConfig, shortener stner.Shortener) error {
+func Serve(conf config.SrvConfig,
+	shortener s.Shortener, filter filter.Filter) error {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt, os.Kill)
 
-	srv := newServer(conf, shortener)
+	srv := newServer(conf, shortener, filter)
 
 	e := gin.New()
 
