@@ -26,33 +26,42 @@ Or use the [docker-compose.yml](./docker-compose.yml).
 Configuration example (`./yasuser -e`):
 
 ```yaml
-debug: false # log-level: debug
-shortener:
-  store:
-    dbpath: ./yasuser.db # bolt db path, required when dbtype is bolt
-    dbtype: bolt         # bolt or redis
-    redis: redis://localhost:6379 # redis address, required when dbtype is redis
+debug: false
+store:
+  dbpath: ./yasuser.db
+  dbtype: bolt  # bolt or redis
+  redis: redis://localhost:6379
 server:
   domain: https://u.kfd.me
-  port: 8084        # port to listen
-  limit: 10         # rate limit (request per second)
-  pprof: false      # enable|disable pprof
-                    # go tool pprof http://localhost:8084/debug/pprof/heap
+  port: 8084    # port to listen
+  limit: 10     # go tool pprof http://localhost:8084/debug/pprof/heap
+  pprof: false  # go tool pprof http://localhost:8084/debug/pprof/heap
   gaid: 62244864-8  # google analytics ID
+filter:
+  domain:
+    whitelist: []
+    blacklist: []
+  keyword:
+    whitelist: []
+    blacklist: []
 ```
 
 All the configuration can be set via environment:
 
 ```txt
 YASUSER_DEBUG=false
-YASUSER_SHORTENER_STORE_DBPATH=./yasuser.db
-YASUSER_SHORTENER_STORE_DBTYPE=bolt
-YASUSER_SHORTENER_STORE_REDIS=redis://localhost:6379
+YASUSER_STORE_DBPATH=./yasuser.db
+YASUSER_STORE_DBTYPE=bolt
+YASUSER_STORE_REDIS=redis://localhost:6379
 YASUSER_SERVER_DOMAIN=https://u.kfd.me
 YASUSER_SERVER_PORT=8084
 YASUSER_SERVER_LIMIT=10
 YASUSER_SERVER_PPROF=false
 YASUSER_SERVER_GAID=62244864-8
+YASUSER_FILTER_DOMAIN_WHITELIST=
+YASUSER_FILTER_DOMAIN_BLACKLIST=
+YASUSER_FILTER_KEYWORD_WHITELIST=
+YASUSER_FILTER_KEYWORD_BLACKLIST=
 ```
 
 ## Usage
@@ -117,6 +126,7 @@ See [benchmark](benchmark/readme.md)
 - [ ] statistic
   - [ ] URL status
   - [ ] runtime metrics
+  - [ ] status badge
 - [x] UI index
   - [x] google analytics
   - [x] prettify the index
