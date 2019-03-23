@@ -1,7 +1,10 @@
-sudo: required
+# build docker images using makefile
 
 services:
   - docker
+
+before_install:
+  - docker pull wrfly/golang-alpine-build
 
 script:
   - make img
