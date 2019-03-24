@@ -49,7 +49,7 @@ type server struct {
 	gaID   string
 	limit  int64
 
-	stener  s.Shortener
+	handler s.Shortener
 	fileMap map[string]bool
 	filter  filter.Filter
 
@@ -68,7 +68,7 @@ func newServer(conf config.SrvConfig,
 	srv := server{
 		domain:  conf.Domain,
 		host:    u.Host,
-		stener:  shortener,
+		handler: shortener,
 		gaID:    conf.GAID,
 		limit:   conf.Limit,
 		fileMap: make(map[string]bool),
@@ -115,23 +115,21 @@ func (s *server) handleURI() gin.HandlerFunc {
 		}
 
 		// handle shortURL
-		shortURL, err := s.stener.Restore(URI)
-		if err != nil {
-			c.String(http.StatusNotFound, fmt.Sprintln(err))
-			return
-		}
-
-		if err := s.invalidURL(shortURL.Ori); err != nil {
-			c.String(http.StatusBadGateway, fmt.Sprintln(err))
-			return
-		}
-
-		if shortURL.Expire != nil {
-			c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
-		} else {
+		shortURL, err := s.handler.Restore(URI)
+		switch err {
+		case types.ErrURLExpired:
 			c.String(http.StatusForbidden, "URL expired")
+		case types.ErrNotFound:
+			c.String(http.StatusNotFound, fmt.Sprintln(err))
+		case nil:
+			if err := s.invalidURL(shortURL.Ori); err != nil {
+				c.String(http.StatusBadGateway, fmt.Sprintln(err))
+				return
+			}
+			c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
+		default:
+			c.String(http.StatusInternalServerError, fmt.Sprintln(err))
 		}
-
 	}
 }
 
@@ -171,7 +169,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			badRequest(c, err)
 			return
 		}
-		shortURL, err := s.stener.Shorten(longURL, opts)
+		shortURL, err := s.handler.Shorten(longURL, opts)
 		if err != nil {
 			badRequest(c, err)
 			return

@@ -1,11 +1,10 @@
-FROM wrfly/glide
-ENV PKG /go/src/github.com/wrfly/yasuser
-COPY . ${PKG}
-RUN cd ${PKG} && \
-    glide i && \
+FROM wrfly/golang-alpine-build
+RUN apk add --no-cache g++
+COPY . /src
+RUN cd /src && \
     make test && \
     make build && \
-    mv ${PKG}/yasuser /
+    mv yasuser /
 
 FROM alpine
 COPY --from=0 /yasuser /usr/local/bin/

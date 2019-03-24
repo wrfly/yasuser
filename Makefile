@@ -15,7 +15,7 @@ build:
 
 .PHONY: test
 test:
-	go test -v --cover `glide nv`
+	go test -v --cover ./...
 
 .PHONY: dev
 dev: asset build
@@ -29,7 +29,10 @@ pprof: asset build
 
 .PHONY: img
 img:
-	docker build -t wrfly/$(NAME):$(VERSION) -t wrfly/$(NAME) -t wrfly/$(NAME):develop .
+	docker build \
+		-t wrfly/$(NAME):$(VERSION) \
+		-t wrfly/$(NAME) \
+		-t wrfly/$(NAME):develop .
 
 .PHONY: push-img
 push-img:
