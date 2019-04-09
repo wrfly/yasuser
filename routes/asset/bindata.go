@@ -18,7 +18,7 @@ import (
 
 type Assets interface {
 	List() []Asset // return all files
-	Asset(name string) (Asset, error)
+	Find(name string) (Asset, error)
 	ServeHTTP(w http.ResponseWriter, r *http.Request) // implement http.FileServer
 }
 
@@ -42,7 +42,7 @@ type data struct {
 	all    *file
 }
 
-func (d *data) Asset(name string) (Asset, error) {
+func (d *data) Find(name string) (Asset, error) {
 	if f, found := d.files[name]; found {
 		return &fileReader{f, 0}, nil
 	}
@@ -248,4 +248,52 @@ func unCompress(in []byte) []byte {
 	defer zr.Close()
 	bs, _ := ioutil.ReadAll(zr)
 	return bs
+}
+
+var (
+	Root Assets
+	fs   []*file
+	root = &data{}
+)
+
+func init() {
+	for _, f := range fs {
+		f.b = unCompress(f.cb)
+		if !f.isDir || len(f.files) != 0 {
+			continue
+		}
+		for _, ff := range fs {
+			if ff.dirP == f.path {
+				f.infos = append(f.infos, ff.fileInfo)
+				f.files = append(f.files, ff)
+				f.assets = append(f.assets, &fileReader{ff, 0})
+			}
+		}
+	}
+
+	all := &file{fileInfo: &fileInfo{isDir: true}}
+	for _, f := range fs {
+		if f.IsDir() {
+			root.files[f.sPath+"/"] = f
+		}
+		root.files[f.sPath] = f
+		root.files[f.path] = f
+		all.files = append(all.files, f)
+		all.infos = append(all.infos, f.fileInfo)
+		all.assets = append(all.assets, &fileReader{f, 0})
+	}
+	root.all = all
+	Root = root
+}
+
+func List() []Asset {
+	return root.List()
+}
+
+func Find(name string) (Asset, error) {
+	return root.Find(name)
+}
+
+var Handler = func(w http.ResponseWriter, r *http.Request) {
+	root.ServeHTTP(w, r)
 }

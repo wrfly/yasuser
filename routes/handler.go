@@ -36,7 +36,7 @@ func init() {
 	}
 	validCustomURI = validURI
 
-	a, err := asset.Data.Asset("/index.html")
+	a, err := asset.Find("/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +75,7 @@ func newServer(conf config.SrvConfig,
 		tb:      make(map[string]tokenbucket.Bucket, 0),
 		filter:  filter,
 	}
-	for _, a := range asset.Data.List() {
+	for _, a := range asset.List() {
 		srv.fileMap[a.Name()] = true
 	}
 
@@ -110,7 +110,7 @@ func (s *server) handleURI() gin.HandlerFunc {
 			return
 		}
 		if s.fileMap[c.Request.RequestURI] {
-			asset.Data.ServeHTTP(c.Writer, c.Request)
+			asset.Handler(c.Writer, c.Request)
 			return
 		}
 
