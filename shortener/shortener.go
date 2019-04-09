@@ -18,6 +18,8 @@ type Shortener interface {
 	Shorten(long string, ops *types.ShortOptions) (*types.URL, error)
 	// Restore a short URL
 	Restore(short string) (*types.URL, error)
+	// get status (total handled and visited)
+	Status() (int, int)
 }
 
 type shortener struct {
@@ -142,4 +144,8 @@ func (s shortener) customURLAlreadyExist(short, long string) bool {
 	}
 
 	return false
+}
+
+func (s shortener) Status() (int, int) {
+	return 100, 100
 }
