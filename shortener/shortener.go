@@ -19,7 +19,7 @@ type Shortener interface {
 	// Restore a short URL
 	Restore(short string) (*types.URL, error)
 	// get status (total handled and visited)
-	Status() (int, int)
+	Status() (int64, int64)
 }
 
 type shortener struct {
@@ -71,9 +71,12 @@ func (s shortener) Shorten(long string, opts *types.ShortOptions) (*types.URL, e
 	logrus.Debugf("url %s not found, create a new one", long)
 
 	short := opts.Custom
-	keyNums := s.db.Len()
+	keyNum, err := s.db.IncKey()
+	if err != nil {
+		return nil, err
+	}
 	if short == "" {
-		short = strings.TrimLeft(utils.CalHash(keyNums), "0")
+		short = strings.TrimLeft(utils.CalHash(keyNum), "0")
 	}
 	logrus.Debugf("short %s to %s", long, short)
 
@@ -109,6 +112,7 @@ func (s shortener) Restore(short string) (*types.URL, error) {
 		if cacheURL.Expired() {
 			return nil, types.ErrURLExpired
 		}
+		s.db.IncVisited()
 		return cacheURL, nil
 	}
 
@@ -126,6 +130,7 @@ func (s shortener) Restore(short string) (*types.URL, error) {
 
 	s.cacher.Store(URL)
 	logrus.Debugf("restore url [ %s ] -> [ %s ]", short, URL.Ori)
+	s.db.IncVisited()
 
 	return URL, nil
 }
@@ -146,6 +151,8 @@ func (s shortener) customURLAlreadyExist(short, long string) bool {
 	return false
 }
 
-func (s shortener) Status() (int, int) {
-	return 100, 100
+func (s shortener) Status() (int64, int64) {
+	k, _ := s.db.Keys()
+	v, _ := s.db.Visited()
+	return k, v
 }

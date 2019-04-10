@@ -224,7 +224,7 @@ func generateOptions(h http.Header) (*types.ShortOptions, error) {
 	return &types.ShortOptions{
 		Custom: customURI,
 		TTL:    duration,
-		Passwd: passWord,
+		Pass:   passWord,
 	}, nil
 }
 

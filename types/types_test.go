@@ -13,7 +13,7 @@ func TestURL(t *testing.T) {
 		Ori:    "https://kfd.me",
 		Short:  "1B",
 		Expire: &n,
-		Passwd: "pass",
+		Pass:   "pass",
 	}
 
 	b := u.Bytes()
@@ -34,7 +34,7 @@ func BenchmarkURL(b *testing.B) {
 			Ori:    "https://kfd.me",
 			Short:  "1B",
 			Expire: &n,
-			Passwd: "pass",
+			Pass:   "pass",
 		}
 
 		bs := u.Bytes()

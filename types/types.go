@@ -7,14 +7,14 @@ import (
 )
 
 type ShortOptions struct {
-	Passwd string
+	Pass   string
 	Custom string
 	TTL    time.Duration
 }
 
 type URL struct {
 	Ori    string
-	Passwd string
+	Pass   string
 	Short  string
 	Hash   string
 	Expire *time.Time
@@ -29,13 +29,6 @@ func (u *URL) Bytes() []byte {
 	}
 	return u.bs
 }
-
-// // implementing encoding.BinaryMarshaler
-// func (u *URL) MarshalBinary() (data []byte, err error) {
-// 	var buffer bytes.Buffer
-// 	gob.NewEncoder(&buffer).Encode(u)
-// 	return buffer.Bytes(), nil
-// }
 
 func (u *URL) Decode(byts []byte) *URL {
 	var data bytes.Buffer

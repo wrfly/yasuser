@@ -14,14 +14,19 @@ const (
 	REDIS = "redis"
 )
 
-var skipKeyNums int64 = 99
+var skipKeyNum int64 = 99
 
 // Database is a KV storage, there are two relationships
 // hashSum -> short & short -> long
 // hashSum is the URL's hashSum
 type Database interface {
 	Close() error
-	Len() int64
+
+	Keys() (int64, error)
+	IncKey() (int64, error)
+	Visited() (int64, error)
+	IncVisited() (int64, error)
+
 	Store(URL *types.URL) error
 	GetShort(hashSum string) (URL *types.URL, err error)
 	GetLong(short string) (URL *types.URL, err error)
