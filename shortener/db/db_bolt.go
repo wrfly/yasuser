@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strconv"
 	"sync/atomic"
 
 	"github.com/boltdb/bolt"
@@ -12,11 +13,15 @@ import (
 const (
 	shortBucket = "s"
 	longBucket  = "l"
+	statsBucket = "st"
 )
 
+var visitedKey = []byte("visited")
+
 type boltDB struct {
-	db     *bolt.DB
-	length *int64
+	db      *bolt.DB
+	length  *int64
+	visited *int64
 }
 
 func newBoltDB(path string) (*boltDB, error) {
@@ -28,20 +33,33 @@ func newBoltDB(path string) (*boltDB, error) {
 		return nil, fmt.Errorf("db is nil")
 	}
 
+	visited := new(int64)
 	b := &boltDB{
-		db:     db,
-		length: &skipKeyNums,
+		db:      db,
+		length:  &skipKeyNum,
+		visited: visited,
 	}
 	b.createBucket(longBucket)  // short -> URL
 	b.createBucket(shortBucket) // Hash  -> URL
+	b.createBucket(statsBucket) // status
 
-	b.db.View(func(tx *bolt.Tx) error {
+	err = b.db.View(func(tx *bolt.Tx) error {
 		bkt := tx.Bucket([]byte(shortBucket))
-		*b.length += int64(bkt.Stats().KeyN)
+		atomic.AddInt64(b.length, int64(bkt.Stats().KeyN))
+
+		statsBkt := tx.Bucket([]byte(statsBucket))
+		v := string(statsBkt.Get(visitedKey))
+		if v != "" {
+			i, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				return err
+			}
+			atomic.AddInt64(b.length, i)
+		}
 		return nil
 	})
 
-	return b, nil
+	return b, err
 }
 
 func (b *boltDB) createBucket(bucketName string) error {
@@ -82,10 +100,23 @@ func (b *boltDB) GetShort(hashSum string) (*types.URL, error) {
 	return b.get(shortBucket, hashSum)
 }
 
-// Len returns the currerent length of keys, and +1
+// Len returns how many keys in store
+func (b *boltDB) Keys() (int64, error) {
+	return atomic.LoadInt64(b.length), nil
+}
+
+// IncKey returns the current length of keys, and +1
 // use atomic for concurrency conflict handling
-func (b *boltDB) Len() int64 {
-	return atomic.AddInt64(b.length, 1) - 1
+func (b *boltDB) IncKey() (int64, error) {
+	return atomic.AddInt64(b.length, 1) - 1, nil
+}
+
+func (b *boltDB) Visited() (int64, error) {
+	return atomic.LoadInt64(b.visited), nil
+}
+
+func (b *boltDB) IncVisited() (int64, error) {
+	return atomic.AddInt64(b.visited, 1) - 1, nil
 }
 
 func (b *boltDB) GetLong(shortURL string) (*types.URL, error) {

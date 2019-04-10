@@ -123,10 +123,10 @@ See [benchmark](benchmark/readme.md)
 - ~~[ ] management(auth)~~
   - [x] domain filter
   - [x] keyword filter
-- [ ] statistic
-  - [ ] URL status
-  - [ ] runtime metrics
-  - [ ] status badge
+- [x] statistic
+  - [x] URL status
+  ~~- [ ] runtime metrics~~
+  - [x] status badge
 - [x] UI index
   - [x] google analytics
   - [x] prettify the index

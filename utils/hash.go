@@ -11,14 +11,14 @@ import (
 
 func HashURL(url string, opts *types.ShortOptions) string {
 	// custom URL connot exist with TTL
-	in := fmt.Sprintf("%s:%s", url, opts.Passwd)
+	in := fmt.Sprintf("%s:%s", url, opts.Pass)
 	if opts.TTL.Seconds() != 0 {
 		in = fmt.Sprintf("%s:%s:%s",
-			url, opts.Passwd, opts.TTL.String())
+			url, opts.Pass, opts.TTL.String())
 	}
 	if opts.Custom != "" {
 		in = fmt.Sprintf("%s:%s:%s",
-			url, opts.Custom, opts.Passwd)
+			url, opts.Custom, opts.Pass)
 	}
 	return XXHash(in)
 }

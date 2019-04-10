@@ -50,5 +50,5 @@ tools:
 .PHONY: asset
 asset:
 	bindata -pkg asset \
-		-resource routes/index \
+		-resource html \
 		-target routes/asset

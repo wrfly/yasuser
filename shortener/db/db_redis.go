@@ -11,7 +11,10 @@ type redisDB struct {
 	cli *redis.Client
 }
 
-const KEY_NUMS = "KEY_NUMS"
+const (
+	KEY_NUMS = "KEY_NUMS"
+	VISITED  = "VISITED"
+)
 
 func newRedisDB(redisAddr string) (*redisDB, error) {
 	opts, err := redis.ParseURL(redisAddr)
@@ -24,7 +27,7 @@ func newRedisDB(redisAddr string) (*redisDB, error) {
 		return nil, err
 	}
 	if cli.Get(KEY_NUMS).Err() == redis.Nil {
-		cli.Set(KEY_NUMS, skipKeyNums, -1)
+		cli.Set(KEY_NUMS, skipKeyNum, -1)
 	}
 
 	return &redisDB{
@@ -36,12 +39,31 @@ func (r *redisDB) Close() error {
 	return r.cli.Close()
 }
 
-func (r *redisDB) Len() int64 {
-	length, err := r.cli.Incr(KEY_NUMS).Result()
+// IncKey returns the current length of keys, and +1
+// use atomic for concurrency conflict handling
+func (r *redisDB) IncKey() (int64, error) {
+	return r.incKey(KEY_NUMS)
+
+}
+
+func (r *redisDB) Keys() (int64, error) {
+	return r.cli.Get(KEY_NUMS).Int64()
+}
+
+func (r *redisDB) Visited() (int64, error) {
+	return r.cli.Get(VISITED).Int64()
+}
+
+func (r *redisDB) IncVisited() (int64, error) {
+	return r.incKey(VISITED)
+}
+
+func (r *redisDB) incKey(key string) (int64, error) {
+	length, err := r.cli.Incr(key).Result()
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
-	return length
+	return length, nil
 }
 
 func (r *redisDB) Store(URL *types.URL) error {

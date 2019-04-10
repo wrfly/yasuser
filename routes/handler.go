@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/wrfly/testing-kit/util/tokenbucket"
 
 	"github.com/wrfly/yasuser/config"
@@ -20,8 +21,8 @@ import (
 )
 
 const (
-	maxPasswdLength = 60
-	maxCustomLength = 60
+	maxPasswordLength = 60
+	maxCustomLength   = 60
 )
 
 var (
@@ -36,7 +37,7 @@ func init() {
 	}
 	validCustomURI = validURI
 
-	a, err := asset.Data.Asset("/index.html")
+	a, err := asset.Find("/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +76,7 @@ func newServer(conf config.SrvConfig,
 		tb:      make(map[string]tokenbucket.Bucket, 0),
 		filter:  filter,
 	}
-	for _, a := range asset.Data.List() {
+	for _, a := range asset.List() {
 		srv.fileMap[a.Name()] = true
 	}
 
@@ -91,26 +92,29 @@ func (s *server) handleIndex() gin.HandlerFunc {
 			c.String(200, fmt.Sprintf("curl %s -d \"%s\"",
 				s.domain, "http://longlonglong.com/long/long/long?a=1&b=2"))
 		} else {
+			shortened, requests := s.handler.Status()
 			// visit from a web browser
-			indexTemplate.Execute(c.Writer, map[string]string{
-				"domain": s.domain,
-				"gaID":   s.gaID,
+			indexTemplate.Execute(c.Writer, map[string]interface{}{
+				"domain":    s.domain,
+				"gaID":      s.gaID,
+				"shortened": shortened,
+				"requests":  requests,
 			})
 		}
 	}
 }
 
 func (s *server) handleURI() gin.HandlerFunc {
-
 	return func(c *gin.Context) {
-		URI := c.Param("URI")
+		logrus.Debugf("request URI: %s", c.Request.RequestURI)
 
+		URI := c.Param("URI")
 		if URI == "" {
 			c.String(404, fmt.Sprintln("not found"))
 			return
 		}
 		if s.fileMap[c.Request.RequestURI] {
-			asset.Data.ServeHTTP(c.Writer, c.Request)
+			asset.Handler(c.Writer, c.Request)
 			return
 		}
 
@@ -199,9 +203,9 @@ func generateOptions(h http.Header) (*types.ShortOptions, error) {
 		}
 	}
 
-	if len(passWord) > maxPasswdLength {
-		return nil, fmt.Errorf("passwd length exceeded, max %d",
-			maxPasswdLength)
+	if len(passWord) > maxPasswordLength {
+		return nil, fmt.Errorf("password length exceeded, max %d",
+			maxPasswordLength)
 	}
 
 	if customURI != "" {
@@ -213,12 +217,14 @@ func generateOptions(h http.Header) (*types.ShortOptions, error) {
 			return nil, fmt.Errorf("invalid custom URI, must match %s",
 				validCustomURI.String())
 		}
+		// TODO: return error when the short
+		// URL is the same as some assset files' name
 	}
 
 	return &types.ShortOptions{
 		Custom: customURI,
 		TTL:    duration,
-		Passwd: passWord,
+		Pass:   passWord,
 	}, nil
 }
 

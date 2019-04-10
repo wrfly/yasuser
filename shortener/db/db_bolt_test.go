@@ -52,7 +52,7 @@ func TestBoltDBLen(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	skipped := skipKeyNums
+	skipped := skipKeyNum
 	count := 99
 	for index := 0; index < count; index++ {
 		u := &types.URL{
@@ -61,8 +61,9 @@ func TestBoltDBLen(t *testing.T) {
 			Hash:  fmt.Sprintf("%d", index),
 		}
 		assert.NoError(t, db.Store(u))
-		db.Len()
+		db.IncKey()
 	}
 
-	assert.Equal(t, int64(count)+skipped, db.Len())
+	k, _ := db.IncKey()
+	assert.Equal(t, int64(count)+skipped, k)
 }
