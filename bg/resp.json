@@ -1,0 +1,26 @@
+{
+    "images": [{
+        "startdate": "20190410",
+        "fullstartdate": "201904101600",
+        "enddate": "20190411",
+        "url": "/th?id=OHR.Bollenstreek_ZH-CN5400317097_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp",
+        "urlbase": "/th?id=OHR.Bollenstreek_ZH-CN5400317097",
+        "copyright": "荷兰Duin- en Bollenstreek地区的郁金香田 (© Frans Sellies/Getty Images)",
+        "copyrightlink": "http://www.bing.com/search?q=%E9%83%81%E9%87%91%E9%A6%99%E7%94%B0&form=hpcapt&mkt=zh-cn",
+        "title": "",
+        "quiz": "/search?q=Bing+homepage+quiz&filters=WQOskey:%22HPQuiz_20190410_Bollenstreek%22&FORM=HPQUIZ",
+        "wp": true,
+        "hsh": "ecc536420ff643e1f8a0385d550a33b8",
+        "drk": 1,
+        "top": 1,
+        "bot": 1,
+        "hs": []
+    }],
+    "tooltips": {
+        "loading": "Loading...",
+        "previous": "Previous image",
+        "next": "Next image",
+        "walle": "This image is not available to download as wallpaper.",
+        "walls": "Download this image. Use of this image is restricted to wallpaper only."
+    }
+}

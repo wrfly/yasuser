@@ -15,6 +15,15 @@
         window.dataLayer = window.dataLayer || [];function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());gtag('config', 'UA-{{ .gaID }}');
     </script>
+    <style>
+    html { 
+        background: url({{ .bglink }}) no-repeat center center fixed; 
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+    </style>
 </head>
 
 <body>

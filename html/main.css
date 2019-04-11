@@ -1,6 +1,7 @@
 body {
-    background-color: dodgerblue;
-    color: aliceblue;
+    background: rgba(119, 115, 115, 0.5);
+    color: black;
+    /* text-shadow: rgb(129, 128, 128) 0.1em 0.1em 0.2em; */
     font-family: monospace, Arial, Helvetica, sans-serif;
 }
 
@@ -10,13 +11,13 @@ body {
 }
 
 a {
-    color: #0ef258b3;
+    color: rgb(46, 85, 255);
     text-decoration: none;
     transition: .5s ease;
 }
 
 a:hover {
-    color: white;
+    color: rgb(13, 30, 65);
     transition: .5s ease;
 }
 
@@ -53,4 +54,6 @@ button {
     height: 25px;
     border: 1px;
     border-radius: 4px;
+    color: black;
+    background: yellowgreen;
 } 
