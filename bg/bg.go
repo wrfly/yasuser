@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +18,16 @@ type bingDaily struct {
 	} `json:"images"`
 }
 
+var (
+	link string
+	last time.Time
+)
+
 func Image() string {
+	if time.Now().Sub(last) < time.Minute*10 {
+		return link
+	}
+
 	resp, err := http.Get(bingDailyURL)
 	if err != nil {
 		logrus.Errorf("get image link error: %s", err)
@@ -37,8 +47,10 @@ func Image() string {
 	}
 
 	if len(r.Images) >= 1 {
-		return "https://www.bing.com" + r.Images[0].URL
+		link = r.Images[0].URL
+		last = time.Now()
+		return "https://www.bing.com" + link
 	}
-	logrus.Errorf("no images", len(r.Images))
+	logrus.Error("no images")
 	return ""
 }
