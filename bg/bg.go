@@ -47,9 +47,9 @@ func Image() string {
 	}
 
 	if len(r.Images) >= 1 {
-		link = r.Images[0].URL
+		link = "https://www.bing.com" + r.Images[0].URL
 		last = time.Now()
-		return "https://www.bing.com" + link
+		return link
 	}
 	logrus.Error("no images")
 	return ""
