@@ -7,6 +7,7 @@ RUN cd /src && \
     mv yasuser /
 
 FROM alpine
+RUN apk add --update ca-certificates
 COPY --from=0 /yasuser /usr/local/bin/
 COPY config.yml /etc/yasuser-config.yml
 VOLUME [ "/data" ]

@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/wrfly/testing-kit/util/tokenbucket"
 
+	"github.com/wrfly/yasuser/bg"
 	"github.com/wrfly/yasuser/config"
 	"github.com/wrfly/yasuser/filter"
 	"github.com/wrfly/yasuser/routes/asset"
@@ -99,6 +100,7 @@ func (s *server) handleIndex() gin.HandlerFunc {
 				"gaID":      s.gaID,
 				"shortened": shortened,
 				"requests":  requests,
+				"bglink":    bg.Image(),
 			})
 		}
 	}
