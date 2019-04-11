@@ -54,7 +54,7 @@ func newBoltDB(path string) (*boltDB, error) {
 			if err != nil {
 				return err
 			}
-			atomic.AddInt64(b.length, i)
+			atomic.AddInt64(b.visited, i)
 		}
 		return nil
 	})
@@ -116,7 +116,13 @@ func (b *boltDB) Visited() (int64, error) {
 }
 
 func (b *boltDB) IncVisited() (int64, error) {
-	return atomic.AddInt64(b.visited, 1) - 1, nil
+	err := b.db.Update(func(tx *bolt.Tx) error {
+		statsBkt := tx.Bucket([]byte(statsBucket))
+		return statsBkt.Put(visitedKey, []byte(fmt.Sprint(
+			atomic.AddInt64(b.visited, 1),
+		)))
+	})
+	return atomic.LoadInt64(b.visited), err
 }
 
 func (b *boltDB) GetLong(shortURL string) (*types.URL, error) {
