@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -11,7 +11,7 @@ var (
 )
 
 var author = []*cli.Author{
-	&cli.Author{
+	{
 		Name:  "wrfly",
 		Email: "mr.wrfly@gmail.com",
 	},

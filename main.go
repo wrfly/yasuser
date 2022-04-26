@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 	"github.com/wrfly/ecp"
-	"gopkg.in/urfave/cli.v2"
 
 	"github.com/wrfly/yasuser/config"
 	"github.com/wrfly/yasuser/filter"
