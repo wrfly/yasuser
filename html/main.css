@@ -1,6 +1,6 @@
 body {
-    background: rgba(119, 115, 115, 0.5);
-    color: black;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
     /* text-shadow: rgb(129, 128, 128) 0.1em 0.1em 0.2em; */
     font-family: monospace, Arial, Helvetica, sans-serif;
 }
@@ -22,11 +22,12 @@ a:hover {
 }
 
 main {
-    top: 20%;
+    padding-top: 1%;
 }
 
 footer {
     padding-top: 50px;
+    padding-bottom: 3%;
 }
 
 .example {

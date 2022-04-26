@@ -159,7 +159,7 @@ func (s *server) handleLongURL() gin.HandlerFunc {
 			badRequest(c, err)
 			return
 		}
-		if n > MAX_URL_LENGTH {
+		if n > _MaxURLLength {
 			badRequest(c, types.ErrURLTooLong)
 			return
 		}
