@@ -18,11 +18,11 @@ import (
 	s "github.com/wrfly/yasuser/shortener"
 )
 
-const MAX_URL_LENGTH = 1e3
+const _MaxURLLength = 1 << 11
 
 var urlBufferPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, MAX_URL_LENGTH+1)
+		return make([]byte, _MaxURLLength+1)
 	},
 }
 
