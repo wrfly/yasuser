@@ -67,8 +67,9 @@ func (c *Config) Parse(filePath string) {
 		logrus.Fatal(utils.AddLineNum(err))
 	}
 }
+
 func (c *Config) Example() {
-	ecp.Default(c)
+	ecp.Parse(c)
 
 	bs, err := yaml.Marshal(*c)
 	if err != nil {
