@@ -19,9 +19,9 @@ func TestBoltDB(t *testing.T) {
 	removeTempDB()
 
 	u := &types.URL{
-		Short: "_1B",
-		Ori:   "http://kfd.me",
-		Hash:  "5d41402abc4b2a76b9719d911017c592",
+		Short:    "_1B",
+		Original: "http://kfd.me",
+		Hash:     "5d41402abc4b2a76b9719d911017c592",
 	}
 
 	db, err := newBoltDB(tempDBPath)
@@ -56,9 +56,9 @@ func TestBoltDBLen(t *testing.T) {
 	count := 99
 	for index := 0; index < count; index++ {
 		u := &types.URL{
-			Short: fmt.Sprintf("%d", index),
-			Ori:   fmt.Sprintf("http://u.kfd.me/index-%d", index),
-			Hash:  fmt.Sprintf("%d", index),
+			Short:    fmt.Sprintf("%d", index),
+			Original: fmt.Sprintf("http://u.kfd.me/index-%d", index),
+			Hash:     fmt.Sprintf("%d", index),
 		}
 		assert.NoError(t, db.Store(u))
 		db.IncKey()

@@ -30,7 +30,7 @@ func TestShorter(t *testing.T) {
 				t.Error(err)
 			}
 			long, _ := s.Restore(short.Short)
-			assert.Equal(t, URL, long.Ori)
+			assert.Equal(t, URL, long.Original)
 		}
 	})
 
@@ -45,15 +45,16 @@ func TestShorter(t *testing.T) {
 				t.Error(err)
 			}
 			long, _ := s.Restore(short.Short)
-			assert.Equal(t, URL, long.Ori)
+			assert.Equal(t, URL, long.Original)
 			shortURLs[i] = short.Short
 		}
 
 		time.Sleep(time.Second * 2)
 
 		for _, sURL := range shortURLs {
-			_, err := s.Restore(sURL)
-			assert.Error(t, err, "expired")
+			u, err := s.Restore(sURL)
+			assert.Nil(t, err)
+			assert.True(t, u.Expired())
 		}
 	})
 

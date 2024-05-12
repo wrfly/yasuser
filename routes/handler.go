@@ -51,9 +51,9 @@ type server struct {
 	gaID   string
 	limit  int64
 
-	handler s.Shortener
-	fileMap map[string]bool
-	filter  filter.Filter
+	handler    s.Shortener
+	assetFiles map[string]bool
+	filter     filter.Filter
 
 	host string
 	tb   map[string]tokenbucket.Bucket
@@ -68,17 +68,17 @@ func newServer(conf config.SrvConfig,
 	}
 
 	srv := server{
-		domain:  conf.Domain,
-		host:    u.Host,
-		handler: shortener,
-		gaID:    conf.GAID,
-		limit:   conf.Limit,
-		fileMap: make(map[string]bool),
-		tb:      make(map[string]tokenbucket.Bucket, 0),
-		filter:  filter,
+		domain:     conf.Domain,
+		host:       u.Host,
+		handler:    shortener,
+		gaID:       conf.GAID,
+		limit:      conf.Limit,
+		assetFiles: make(map[string]bool),
+		tb:         make(map[string]tokenbucket.Bucket, 0),
+		filter:     filter,
 	}
 	for _, a := range asset.List() {
-		srv.fileMap[a.Name()] = true
+		srv.assetFiles[a.Name()] = true
 	}
 
 	return srv
@@ -106,40 +106,44 @@ func (s *server) handleIndex() gin.HandlerFunc {
 	}
 }
 
-func (s *server) handleURI() gin.HandlerFunc {
+func (s *server) restoreShortLink() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logrus.Debugf("request URI: %s", c.Request.RequestURI)
+		logrus.Debugf("request code: %s", c.Request.RequestURI)
 
-		URI := c.Param("URI")
-		if URI == "" {
-			c.String(404, fmt.Sprintln("not found"))
+		code := c.Param("code")
+		if code == "" {
+			c.String(404, "not found")
 			return
 		}
-		if s.fileMap[c.Request.RequestURI] {
+		if s.assetFiles[c.Request.RequestURI] {
 			asset.Handler(c.Writer, c.Request)
 			return
 		}
 
-		// handle shortURL
-		shortURL, err := s.handler.Restore(URI)
-		switch err {
-		case types.ErrURLExpired:
-			c.String(http.StatusForbidden, "URL expired")
-		case types.ErrNotFound:
-			c.String(http.StatusNotFound, fmt.Sprintln(err))
-		case nil:
-			if err := s.invalidURL(shortURL.Ori); err != nil {
-				c.String(http.StatusBadGateway, fmt.Sprintln(err))
-				return
+		shortURL, err := s.handler.Restore(code)
+		if err != nil {
+			if err == types.ErrNotFound {
+				c.String(http.StatusNotFound, err.Error())
+			} else {
+				c.String(http.StatusInternalServerError, err.Error())
 			}
-			c.Redirect(http.StatusTemporaryRedirect, shortURL.Ori)
-		default:
-			c.String(http.StatusInternalServerError, fmt.Sprintln(err))
+			return
+		}
+
+		if shortURL.Expired() {
+			c.String(http.StatusNotFound, "URL expired")
+			return
+		}
+
+		if err := s.invalidURL(shortURL.Original); err != nil {
+			c.String(http.StatusBadRequest, err.Error())
+		} else {
+			c.Redirect(http.StatusPermanentRedirect, shortURL.Original)
 		}
 	}
 }
 
-func (s *server) handleLongURL() gin.HandlerFunc {
+func (s *server) shortenURL() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// rate limit
 		IP := c.ClientIP()

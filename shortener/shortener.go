@@ -95,7 +95,7 @@ func newURL(hashSum, short, long string, opts *types.ShortOptions) *types.URL {
 	u := new(types.URL)
 	u.Hash = hashSum
 	u.Short = short
-	u.Ori = long
+	u.Original = long
 
 	if opts.TTL.Seconds() > 0 {
 		exp := time.Now().Add(opts.TTL)
@@ -107,32 +107,26 @@ func newURL(hashSum, short, long string, opts *types.ShortOptions) *types.URL {
 // Restore a short URL
 func (s shortener) Restore(short string) (*types.URL, error) {
 	// found in cache
-	if cacheURL, err := s.cacher.Get(short); err == nil {
-		logrus.Debugf("cache get %s=%s", short, cacheURL)
-		if cacheURL.Expired() {
-			return nil, types.ErrURLExpired
-		}
+	if url, err := s.cacher.Get(short); err == nil {
+		logrus.Debugf("cache get %s=%s", short, url)
 		s.db.IncVisited()
-		return cacheURL, nil
+		return url, nil
 	}
 
-	URL, err := s.db.GetLong(short)
+	url, err := s.db.GetLong(short)
+	if err == types.ErrNotFound {
+		return nil, err
+	}
 	if err != nil {
-		if err == types.ErrNotFound {
-			return nil, err
-		}
 		logrus.Errorf("restore URL error: %s", err)
+		return nil, err
 	}
 
-	if URL.Expired() {
-		return nil, types.ErrURLExpired
-	}
-
-	s.cacher.Store(URL)
-	logrus.Debugf("restore url [ %s ] -> [ %s ]", short, URL.Ori)
+	s.cacher.Store(url)
+	logrus.Debugf("restore url [ %s ] -> [ %s ]", short, url.Original)
 	s.db.IncVisited()
 
-	return URL, nil
+	return url, nil
 }
 
 func (s shortener) customURLAlreadyExist(short, long string) bool {
@@ -143,7 +137,7 @@ func (s shortener) customURLAlreadyExist(short, long string) bool {
 		if url.Expired() {
 			return false
 		}
-		if url.Ori != long {
+		if url.Original != long {
 			return true
 		}
 	}

@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -19,6 +20,16 @@ type list struct {
 type urlFilter struct {
 	domain  list
 	keyword list
+}
+
+var simpleHTTPClient = &http.Client{
+	Transport: &http.Transport{
+		DisableKeepAlives: true,
+		ForceAttemptHTTP2: false,
+	},
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
 }
 
 func (f *urlFilter) OK(u *url.URL) error {
@@ -46,6 +57,15 @@ func (f *urlFilter) OK(u *url.URL) error {
 		}
 	}
 
+	// 3xx urls
+	resp, err := simpleHTTPClient.Head(u.String())
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode/100 == 3 {
+		return ErrRedirect
+	}
+
 	return nil
 }
 
@@ -57,6 +77,7 @@ func makeList(slice []string) map[string]bool {
 	return x
 }
 
+// New filter
 func New(conf config.Filter) Filter {
 	return &urlFilter{
 		domain: list{

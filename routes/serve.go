@@ -37,15 +37,15 @@ func Serve(conf config.SrvConfig,
 	e := gin.New()
 
 	e.GET("/", srv.handleIndex())
-	e.POST("/", srv.handleLongURL())
-	e.GET("/:URI", srv.handleURI())
+	e.POST("/", srv.shortenURL())
+	e.GET("/:code", srv.restoreShortLink())
 
 	// go tool pprof
 	if conf.Pprof {
-		e.GET("/:URI/pprof/", func(c *gin.Context) {
+		e.GET("/debug/pprof/", func(c *gin.Context) {
 			pprof.Index(c.Writer, c.Request)
 		})
-		e.GET("/:URI/pprof/:x", func(c *gin.Context) {
+		e.GET("/debug/pprof/:x", func(c *gin.Context) {
 			pprof.Index(c.Writer, c.Request)
 		})
 	}

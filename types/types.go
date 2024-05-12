@@ -13,12 +13,12 @@ type ShortOptions struct {
 }
 
 type URL struct {
-	Ori    string
-	Pass   string
-	Short  string
-	Hash   string
-	Expire *time.Time
-	bs     []byte
+	Original string
+	Password string
+	Short    string
+	Hash     string
+	Expire   *time.Time
+	bs       []byte
 }
 
 func (u *URL) Bytes() []byte {

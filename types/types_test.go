@@ -10,10 +10,10 @@ import (
 func TestURL(t *testing.T) {
 	n := time.Now()
 	u := &URL{
-		Ori:    "https://kfd.me",
-		Short:  "1B",
-		Expire: &n,
-		Pass:   "pass",
+		Original: "https://kfd.me",
+		Short:    "1B",
+		Expire:   &n,
+		Password: "pass",
 	}
 
 	b := u.Bytes()
@@ -24,17 +24,17 @@ func TestURL(t *testing.T) {
 
 	assert.Equal(t, b[lb/2], nu.Bytes()[lb/2])
 	assert.Equal(t, nu.Expire.Local(), u.Expire.Local())
-	assert.Equal(t, nu.Ori, u.Ori)
+	assert.Equal(t, nu.Original, u.Original)
 }
 
 func BenchmarkURL(b *testing.B) {
 	n := time.Now()
 	for i := 0; i < b.N; i++ {
 		u := &URL{
-			Ori:    "https://kfd.me",
-			Short:  "1B",
-			Expire: &n,
-			Pass:   "pass",
+			Original: "https://kfd.me",
+			Short:    "1B",
+			Expire:   &n,
+			Password: "pass",
 		}
 
 		bs := u.Bytes()
